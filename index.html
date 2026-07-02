@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriRoots - Pedidos y Registro de Viandas Saludables</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-brand" onclick="app.showView('client')">
+            <span class="brand-icon">🌱</span>
+            <div>Nutri<span>Roots</span></div>
+        </div>
+        
+        <div class="nav-actions">
+            <a class="nav-link active" id="nav-client-link" onclick="app.showView('client')">Catálogo</a>
+            <a class="nav-link" id="nav-admin-link" onclick="app.showView('admin')" style="display: none;">Panel Admin</a>
+            
+            <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()">
+                🛒 Carrito
+                <span class="cart-count" id="cart-count">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main id="main-content">
+        
+        <!-- VISTA CLIENTE: Catálogo de Compras -->
+        <section id="view-client" class="view-section">
+            <!-- Hero -->
+            <div class="hero">
+                <div class="hero-text">
+                    <span class="hero-badge">✨ Viandas Artesanales y Saludables</span>
+                    <h1>Comida casera, lista para <span>disfrutar</span> en tu mesa.</h1>
+                    <p>Cocinamos diariamente con ingredientes frescos y seleccionados. Elige tus platos semanales y recíbelos en la puerta de tu hogar.</p>
+                    <div class="hero-cta">
+                        <button class="btn-primary" onclick="app.scrollToMenu()">Ver Menú de Hoy</button>
+                        <button class="btn-secondary" id="hero-admin-btn" onclick="app.showView('admin')" style="display: none;">Acceso Admin</button>
+                    </div>
+                </div>
+                <div class="hero-image-container">
+                    <div class="hero-image-decoration"></div>
+                    <img class="hero-image" src="https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80" alt="NutriRoots Gourmet">
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="categories-section">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--dark-muted)">Filtrar por Categoría</h3>
+                <div class="categories-container" id="categories-list">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- Menu Section -->
+            <div class="menu-section" id="menu-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 class="section-title" style="margin-bottom: 0;">Menú Semanal</h2>
+                    <div style="display: flex; gap: 0.3rem; border: 1px solid var(--gray-200); padding: 0.2rem; border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-sm);">
+                        <button id="btn-layout-list" class="filter-btn active" onclick="app.setMenuLayout('list')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem;">📋 Vista Lista</button>
+                        <button id="btn-layout-grid" class="filter-btn" onclick="app.setMenuLayout('grid')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem;">📱 Vista Tarjeta</button>
+                    </div>
+                </div>
+                <div id="menu-container" class="menu-list">
+                    <!-- Platos cargados dinámicamente en formato lista por defecto -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA CHECKOUT: Formulario de Confirmación -->
+        <section id="view-checkout" class="view-section" style="display: none;">
+            <div class="checkout-container">
+                <!-- Formulario -->
+                <div class="checkout-card">
+                    <h3>Datos de Entrega y Pago</h3>
+                    <form id="checkout-form" onsubmit="app.handleCheckoutSubmit(event)">
+                        <div class="form-group">
+                            <label for="checkout-name">Nombre y Apellido *</label>
+                            <input type="text" id="checkout-name" required placeholder="Ej. Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label for="checkout-phone">Teléfono de Contacto (WhatsApp) *</label>
+                            <input type="tel" id="checkout-phone" required placeholder="Ej. +54 9 11 5555 1234">
+                        </div>
+                        <div class="form-group">
+                            <label for="checkout-address">Dirección de Entrega *</label>
+                            <input type="text" id="checkout-address" required placeholder="Calle 123, Piso 2 Dto B, Localidad">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkout-date">Fecha de Entrega *</label>
+                                <input type="date" id="checkout-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-time">Franja Horaria *</label>
+                                <select id="checkout-time" required>
+                                    <option value="" disabled selected>Selecciona horario</option>
+                                    <option value="Mediodía (12:00 a 14:00)">Mediodía (12:00 a 14:00)</option>
+                                    <option value="Tarde (14:00 a 17:00)">Tarde (14:00 a 17:00)</option>
+                                    <option value="Noche (20:00 a 22:00)">Noche (20:00 a 22:00)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="checkout-payment">Método de Pago *</label>
+                            <select id="checkout-payment" required>
+                                <option value="" disabled selected>Selecciona pago</option>
+                                <option value="Efectivo">Efectivo al recibir</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                                <option value="Mercado Pago">Mercado Pago (Dinero en cuenta o tarjeta)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="checkout-notes">Notas del Pedido</label>
+                            <textarea id="checkout-notes" rows="3" placeholder="Restricciones alimenticias, timbre roto, dejar en portería, etc."></textarea>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button type="button" class="btn-secondary" onclick="app.showView('client')" style="flex: 1;">Volver al Catálogo</button>
+                            <button type="submit" class="btn-primary" style="flex: 1.5; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                                <span>Confirmar Pedido</span> 🚀
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resumen de Pedido -->
+                <div class="order-summary-card">
+                    <h3 style="font-size: 1.2rem; border-bottom: 1px solid var(--gray-100); padding-bottom: 0.5rem; margin-bottom: 1rem;">Resumen</h3>
+                    <div class="summary-items" id="checkout-summary-items">
+                        <!-- Dinámico -->
+                    </div>
+                    <div class="cart-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span id="checkout-subtotal">$0</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Envío</span>
+                            <span id="checkout-shipping">$500</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span id="checkout-total">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA ÉXITO: Pedido Enviado -->
+        <section id="view-success" class="view-section" style="display: none;">
+            <div class="success-screen">
+                <div class="success-icon">✓</div>
+                <h2>¡Pedido Registrado con Éxito!</h2>
+                <p>El pedido se ha guardado en nuestro panel de gestión. Para asegurar la entrega inmediata, por favor envía el resumen a nuestro WhatsApp.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <a id="btn-whatsapp-send" href="#" target="_blank" class="btn-primary" style="background-color: #25d366; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                        💬 Enviar Mensaje a WhatsApp
+                    </a>
+                    <button class="btn-secondary" onclick="app.showView('client')">Seguir Comprando</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA PANEL ADMIN: Gestión de Pedidos y Menú -->
+        <section id="view-admin" class="view-section" style="display: none;">
+            <div class="admin-container">
+                <!-- Sidebar -->
+                <aside class="admin-sidebar">
+                    <h3>Panel de Control</h3>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-item active" id="side-orders-btn" onclick="app.switchAdminTab('orders')">
+                            📋 Pedidos
+                        </li>
+                        <li class="sidebar-item" id="side-menu-btn" onclick="app.switchAdminTab('menu')">
+                            🍔 Gestionar Menú
+                        </li>
+                    </ul>
+                </aside>
+
+                <!-- Main Admin Content Area -->
+                <div class="admin-main">
+                    
+                    <!-- TAB 1: Pedidos -->
+                    <div id="admin-tab-orders" class="admin-tab">
+                        <!-- Stats Grid -->
+                        <div class="admin-stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <h4>Ventas Totales</h4>
+                                    <div class="stat-value" id="stat-revenue">$0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">📈</div>
+                                <div class="stat-info">
+                                    <h4>Pedidos Totales</h4>
+                                    <div class="stat-value" id="stat-orders-count">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon yellow">⏳</div>
+                                <div class="stat-info">
+                                    <h4>Pendientes / Cocina</h4>
+                                    <div class="stat-value" id="stat-pending-count">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orders List Card -->
+                        <div class="admin-panel-card" style="margin-top: 1.5rem;">
+                            <div class="panel-header">
+                                <h3 style="font-size: 1.3rem;">Listado de Pedidos</h3>
+                                <div class="panel-filters">
+                                    <button class="filter-btn active" onclick="app.filterOrders('all', this)">Todos</button>
+                                    <button class="filter-btn" onclick="app.filterOrders('pendiente', this)">Pendientes</button>
+                                    <button class="filter-btn" onclick="app.filterOrders('en_cocina', this)">En Cocina</button>
+                                    <button class="filter-btn" onclick="app.filterOrders('entregado', this)">Entregados</button>
+                                    <button class="filter-btn" onclick="app.filterOrders('cancelado', this)">Cancelados</button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Pedido</th>
+                                            <th>Cliente</th>
+                                            <th>Detalle</th>
+                                            <th>Entrega</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-table-body">
+                                        <!-- Carga dinámica de pedidos -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Gestionar Menú -->
+                    <div id="admin-tab-menu" class="admin-tab" style="display: none;">
+                        <div class="admin-panel-card">
+                            <div class="panel-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
+                                <h3 style="font-size: 1.3rem;">Menú de Viandas</h3>
+                                <button class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="app.openMenuModal()">
+                                    + Agregar Plato
+                                </button>
+                            </div>
+                            <div class="menu-editor-grid" id="menu-editor-grid">
+                                <!-- Dinámico -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CARRITO DE COMPRAS DRAWER OVERLAY -->
+    <div class="cart-drawer-overlay" id="cart-drawer-overlay" onclick="app.toggleCart()"></div>
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-header">
+            <h3>Mi Carrito</h3>
+            <button class="btn-close-cart" onclick="app.toggleCart()">×</button>
+        </div>
+        <div class="cart-items-container" id="cart-items">
+            <!-- Dinámico -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-totals">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal">$0</span>
+                </div>
+                <div class="total-row">
+                    <span>Envío</span>
+                    <span id="cart-shipping">$500</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total</span>
+                    <span id="cart-total">$0</span>
+                </div>
+            </div>
+            <button class="btn-primary btn-checkout" onclick="app.proceedToCheckout()" id="btn-cart-checkout">
+                <span>Continuar Pedido</span> →
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR / EDITAR VIANDA (Admin) -->
+    <div class="modal-overlay" id="menu-modal" style="display: none;">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title-text">Agregar Nueva Vianda</h3>
+            <form id="menu-form" onsubmit="app.handleMenuSubmit(event)">
+                <input type="hidden" id="menu-id-field">
+                
+                <div class="form-group">
+                    <label for="menu-name">Nombre de la Vianda *</label>
+                    <input type="text" id="menu-name" required placeholder="Ej. Pollo al Horno con Papas">
+                </div>
+                
+                <div class="form-group">
+                    <label for="menu-description">Descripción *</label>
+                    <textarea id="menu-description" required rows="2" placeholder="Describe los ingredientes, guarnición, tamaño, etc."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="menu-category">Categoría *</label>
+                        <select id="menu-category" required>
+                            <option value="Clásicos">Clásicos</option>
+                            <option value="Pastas">Pastas</option>
+                            <option value="Saludable">Saludable</option>
+                            <option value="Postres">Postres</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="menu-price">Precio ($) *</label>
+                        <input type="number" id="menu-price" required min="0" placeholder="Ej. 3000">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="menu-tag">Etiqueta Especial (Opcional)</label>
+                    <input type="text" id="menu-tag" placeholder="Ej. Más Vendido, Picante, Sin TACC">
+                </div>
+                
+                <div class="form-group">
+                    <label for="menu-image">URL de Imagen (Opcional)</label>
+                    <input type="url" id="menu-image" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                    <input type="checkbox" id="menu-available" checked style="width: auto;">
+                    <label for="menu-available" style="margin-bottom: 0; cursor: pointer;">Disponible para la venta</label>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="app.closeMenuModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-save-menu-item">Guardar Plato</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR PEDIDO (Admin) -->
+    <div class="modal-overlay" id="order-modal" style="display: none;">
+        <div class="modal-content">
+            <h3 class="modal-title">Editar Pedido</h3>
+            <form id="order-form" onsubmit="app.handleOrderSubmit(event)">
+                <input type="hidden" id="order-id-field">
+                
+                <div class="form-group">
+                    <label for="order-customerName">Nombre del Cliente *</label>
+                    <input type="text" id="order-customerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-phone">Teléfono (WhatsApp) *</label>
+                    <input type="tel" id="order-phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-address">Dirección de Entrega *</label>
+                    <input type="text" id="order-address" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="order-deliveryDate">Fecha de Entrega *</label>
+                        <input type="date" id="order-deliveryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="order-deliveryTime">Horario *</label>
+                        <select id="order-deliveryTime" required>
+                            <option value="Mediodía (12:00 a 14:00)">Mediodía (12:00 a 14:00)</option>
+                            <option value="Tarde (14:00 a 17:00)">Tarde (14:00 a 17:00)</option>
+                            <option value="Noche (20:00 a 22:00)">Noche (20:00 a 22:00)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="order-paymentMethod">Método de Pago *</label>
+                        <select id="order-paymentMethod" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Mercado Pago">Mercado Pago</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="order-status">Estado del Pedido *</label>
+                        <select id="order-status" required>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_cocina">En Cocina</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-notes">Notas del Pedido</label>
+                    <textarea id="order-notes" rows="2"></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="app.closeOrderModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div>
+                <div class="footer-logo">🌱 Nutri<span>Roots</span></div>
+                <p class="footer-info">Alimentación consciente y viandas saludables preparadas con raíces naturales y vegetales frescos directos a tu mesa.</p>
+            </div>
+            <div class="footer-right">
+                <p>📍 Buenos Aires, Argentina</p>
+                <p>📞 +54 9 11 5555-5555</p>
+                <p style="margin-top: 1rem; color: var(--secondary)">Desarrollado para NutriRoots</p>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <span>&copy; 2026 NutriRoots. Todos los derechos reservados.</span>
+            <span>Estilo Premium &bull; LocalStorage DB</span>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPTS -->
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
