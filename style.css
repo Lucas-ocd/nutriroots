@@ -1190,11 +1190,8 @@ footer {
     box-shadow: var(--shadow-sm);
 }
 
-.menu-list-day.lunes { background: linear-gradient(135deg, #ff5e36, #ff7e5f); }
-.menu-list-day.martes { background: linear-gradient(135deg, #ffb800, #ffc837); color: var(--dark); }
-.menu-list-day.miércoles { background: linear-gradient(135deg, #10b981, #34d399); }
-.menu-list-day.jueves { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-.menu-list-day.viernes { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+.menu-list-day.opcion-1 { background: linear-gradient(135deg, #ff5e36, #ff7e5f); }
+.menu-list-day.opcion-2 { background: linear-gradient(135deg, #10b981, #34d399); }
 
 .menu-list-img {
     width: 80px;

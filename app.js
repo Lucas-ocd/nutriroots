@@ -50,14 +50,14 @@ class NutriRootsApp {
 
     // --- MANEJO DE PERSISTENCIA ---
     loadLocalStorageData() {
-        const localMenu = localStorage.getItem("nr_menu");
+        const localMenu = localStorage.getItem("nr_menu_v2");
         const localOrders = localStorage.getItem("nr_orders");
         
         if (localMenu) {
             this.menu = JSON.parse(localMenu);
         } else {
             this.menu = [...INITIAL_MENU];
-            localStorage.setItem("nr_menu", JSON.stringify(this.menu));
+            localStorage.setItem("nr_menu_v2", JSON.stringify(this.menu));
         }
 
         if (localOrders) {
@@ -69,7 +69,7 @@ class NutriRootsApp {
     }
 
     saveMenuToLocalStorage() {
-        localStorage.setItem("nr_menu", JSON.stringify(this.menu));
+        localStorage.setItem("nr_menu_v2", JSON.stringify(this.menu));
     }
 
     saveOrdersToLocalStorage() {
@@ -122,7 +122,7 @@ class NutriRootsApp {
 
     // --- LÓGICA DEL CLIENTE Y CATÁLOGO ---
     getCategories() {
-        const categories = new Set(this.menu.map(item => item.category));
+        const categories = new Set(this.menu.map(item => item.category).filter(c => c && c.trim() !== ""));
         return ["Todas", ...categories];
     }
 
@@ -208,8 +208,8 @@ class NutriRootsApp {
                         </button>
                       `;
 
-                // Convertir acentos para la clase CSS
-                const dayClass = item.tag ? item.tag.toLowerCase().replace("ércoles", "coles") : 'lunes';
+                // Convertir acentos y espacios para la clase CSS (ej. "Opción 1" -> "opcion-1")
+                const dayClass = item.tag ? item.tag.toLowerCase().replace("ó", "o").replace(" ", "-") : 'opcion-1';
                 return `
                     <div class="menu-list-row" style="opacity: ${isAvailable ? 1 : 0.6}">
                         <div class="menu-list-day ${dayClass}">${item.tag || 'Menú'}</div>
