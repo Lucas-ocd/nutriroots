@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriRoots - Pedidos y Registro de Viandas Saludables</title>
+    <title>Portal de pedidos de viandas</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-brand" onclick="app.showView('client')">
-            <span class="brand-icon">🌱</span>
-            <div>Nutri<span>Roots</span></div>
+        <div class="nav-brand" onclick="app.handleBrandClick()">
+            <img id="brand-logo" src="logo1.svg" alt="NutriRoots Logo" style="height: 55px; width: auto; object-fit: contain; display: none; margin-right: 0.5rem; border-radius: var(--radius-sm);" onload="this.style.display='inline'; document.getElementById('brand-icon-fallback').style.display='none';" onerror="app.handleLogoError(this)">
+            <span id="brand-icon-fallback" class="brand-icon">🌱</span>
+            <div id="brand-name-container">Nutri<span>Roots</span></div>
         </div>
         
         <div class="nav-actions">
-            <a class="nav-link active" id="nav-client-link" onclick="app.showView('client')">Catálogo</a>
-            <a class="nav-link" id="nav-admin-link" onclick="app.showView('admin')" style="display: none;">Panel Admin</a>
+            <a class="nav-link active" id="nav-client-link" onclick="app.handleCatalogLinkClick()">Catálogo</a>
+            <a class="nav-link" id="nav-admin-link" onclick="app.handleAdminLinkClick()">Panel Admin</a>
             
-            <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()">
+            <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()" style="display: none;">
                 🛒 Carrito
                 <span class="cart-count" id="cart-count">0</span>
             </button>
@@ -28,25 +29,116 @@
 
     <!-- MAIN VIEW CONTAINER -->
     <main id="main-content">
-        
+
+        <!-- VISTA LANDING: Selección Inicial -->
+        <section id="view-landing" class="view-section" style="display: block;">
+            <div class="landing-container" style="max-width: 800px; margin: 4rem auto; padding: 0 1.5rem; text-align: center;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--dark);">Bienvenido a <span style="color: var(--primary);">NutriRoots</span></h1>
+                <p style="font-size: 1.1rem; color: var(--gray-600); margin-bottom: 3rem;">¿Para quién es tu pedido de viandas hoy?</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <!-- Opción Particulares -->
+                    <div class="landing-card" onclick="app.selectLandingOption('particular')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏠</div>
+                        <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Particulares</h2>
+                        <p style="color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2rem;">Viandas caseras y saludables, entregadas directamente en la puerta de tu hogar.</p>
+                        <button class="btn-primary" style="width: 100%;">Ingresar al Catálogo</button>
+                    </div>
+                    
+                    <!-- Opción Corporativos -->
+                    <div class="landing-card" onclick="app.selectLandingOption('corporativo')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏢</div>
+                        <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Corporativos</h2>
+                        <p style="color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2rem;">Almuerzos premium y nutritivos para equipos de trabajo y empresas.</p>
+                        <button class="btn-secondary" style="width: 100%;">Acceso Corporativo</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA LOGIN CORPORATIVO -->
+        <section id="view-corporate-login" class="view-section" style="display: none;">
+            <div class="login-container" style="max-width: 420px; margin: 6rem auto; padding: 0 1.5rem;">
+                <div class="login-card" style="background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-200); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">💼</div>
+                    <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark);">Acceso Empresas</h2>
+                    <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 2rem;">Ingresa para acceder al menú corporativo de tu empresa.</p>
+                    
+                    <form id="corporate-login-form" onsubmit="app.handleCorporateLoginSubmit(event)">
+                        <div class="form-group" style="text-align: left; margin-bottom: 1.2rem;">
+                            <label for="corporate-company-select" style="font-weight: 600; font-size: 0.85rem;">Tu Empresa *</label>
+                            <select id="corporate-company-select" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; background: var(--white); cursor: pointer;">
+                                <option value="" disabled selected>Selecciona tu empresa...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
+                            <label for="corporate-login-password" style="font-weight: 600; font-size: 0.85rem;">Contraseña de Acceso *</label>
+                            <input type="password" id="corporate-login-password" required placeholder="Ingresa la contraseña" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                        </div>
+                        
+                        <div id="corporate-login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none;">
+                            ⚠️ Contraseña incorrecta.
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Ingresar al Catálogo</button>
+                    </form>
+                    
+                    <button type="button" class="btn-secondary" onclick="app.showView('landing')" style="width: 100%; margin-top: 1rem; border: none; background: transparent; color: var(--gray-500); font-size: 0.9rem; cursor: pointer;">
+                        ← Volver al inicio
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- VISTA LOGIN DE ADMINISTRACIÓN -->
+        <section id="view-login" class="view-section" style="display: none;">
+            <div class="login-container" style="max-width: 420px; margin: 6rem auto; padding: 0 1.5rem;">
+                <div class="login-card" style="background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-200); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔐</div>
+                    <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark);">Acceso Administrativo</h2>
+                    <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 2rem;">Ingresa tus credenciales para acceder a la gestión del portal.</p>
+                    
+                    <form id="login-form" onsubmit="app.handleLoginSubmit(event)">
+                        <div class="form-group" style="text-align: left; margin-bottom: 1.2rem;">
+                            <label for="login-username" style="font-weight: 600; font-size: 0.85rem;">Usuario / Cocina *</label>
+                            <input type="text" id="login-username" required placeholder="Ej. admin o nutriroots" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                        </div>
+                        <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
+                            <label for="login-password" style="font-weight: 600; font-size: 0.85rem;">Contraseña *</label>
+                            <input type="password" id="login-password" required placeholder="Ingresa tu contraseña" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                        </div>
+                        
+                        <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none;">
+                            ⚠️ Usuario o contraseña incorrectos.
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Iniciar Sesión</button>
+                    </form>
+                    
+                    <button class="btn-secondary" onclick="app.showView('client')" style="width: 100%; margin-top: 1rem; border: none; background: transparent; color: var(--gray-500); font-size: 0.9rem; cursor: pointer;">
+                        ← Volver al Catálogo
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- VISTA CLIENTE: Catálogo de Compras -->
-        <section id="view-client" class="view-section">
+        <section id="view-client" class="view-section" style="display: none;">
             <!-- Hero -->
             <div class="hero">
                 <div class="hero-text">
                     <span class="hero-badge">✨ Viandas Artesanales y Saludables</span>
-                    <h1>Comida casera, lista para <span>disfrutar</span> en tu mesa.</h1>
-                    <p>Cocinamos diariamente con ingredientes frescos y seleccionados. Elige tus platos semanales y recíbelos en la puerta de tu hogar.</p>
+                    <h1 id="client-hero-title">Comida casera, lista para <span>disfrutar</span> en tu mesa.</h1>
+                    <p id="client-hero-desc">Cocinamos diariamente con ingredientes frescos y seleccionados. Elige tus platos semanales y recíbelos en la puerta de tu hogar.</p>
                     <div class="hero-cta">
-                        <button class="btn-primary" onclick="app.scrollToMenu()">Ver Menú de Hoy</button>
-                        <button class="btn-secondary" id="hero-admin-btn" onclick="app.showView('admin')" style="display: none;">Acceso Admin</button>
+                        <button class="btn-secondary" id="hero-admin-btn" onclick="app.handleAdminLinkClick()" style="display: none;">Acceso Admin</button>
                     </div>
                 </div>
                 <div class="hero-image-container">
-                    <div class="hero-image-decoration"></div>
-                    <img class="hero-image" src="https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80" alt="NutriRoots Gourmet">
+                    <img class="hero-image" id="hero-banner-img" src="logo1.svg" alt="NutriRoots Logo" style="object-fit: contain; background-color: transparent; box-shadow: none;" onerror="app.handleHeroLogoError(this)">
                 </div>
             </div>
+
+
 
             <!-- Category Filter -->
             <div class="categories-section">
@@ -61,8 +153,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 class="section-title" style="margin-bottom: 0;">Menú Semanal</h2>
                     <div style="display: flex; gap: 0.3rem; border: 1px solid var(--gray-200); padding: 0.2rem; border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-sm);">
-                        <button id="btn-layout-list" class="filter-btn active" onclick="app.setMenuLayout('list')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem;">📋 Vista Lista</button>
-                        <button id="btn-layout-grid" class="filter-btn" onclick="app.setMenuLayout('grid')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem;">📱 Vista Tarjeta</button>
+                        <button id="btn-layout-list" class="filter-btn active" onclick="app.setMenuLayout('list')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;">📋 Vista Lista</button>
+                        <button id="btn-layout-grid" class="filter-btn" onclick="app.setMenuLayout('grid')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;">📱 Vista Tarjeta</button>
                     </div>
                 </div>
                 <div id="menu-container" class="menu-list">
@@ -76,47 +168,61 @@
             <div class="checkout-container">
                 <!-- Formulario -->
                 <div class="checkout-card">
-                    <h3>Datos de Entrega y Pago</h3>
+                    <h3>Confirmación del Pedido</h3>
                     <form id="checkout-form" onsubmit="app.handleCheckoutSubmit(event)">
+                        <div class="form-group">
+                            <label for="checkout-type">¿Cómo realizas tu pedido? *</label>
+                            <select id="checkout-type" onchange="app.handleCheckoutTypeChange()" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; font-weight: 600; background: var(--white); cursor: pointer;">
+                                <option value="particular">Particular (A Domicilio)</option>
+                                <option value="corporativo">Corporativo (En la Oficina)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="checkout-company-group" style="display: none;">
+                            <label for="checkout-company-select">Selecciona tu Empresa *</label>
+                            <select id="checkout-company-select" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; font-weight: 600; background: var(--white); cursor: pointer;">
+                                <option value="" disabled selected>Selecciona tu empresa...</option>
+                            </select>
+                        </div>
+
                         <div class="form-group">
                             <label for="checkout-name">Nombre y Apellido *</label>
                             <input type="text" id="checkout-name" required placeholder="Ej. Juan Pérez">
                         </div>
-                        <div class="form-group">
-                            <label for="checkout-phone">Teléfono de Contacto (WhatsApp) *</label>
-                            <input type="tel" id="checkout-phone" required placeholder="Ej. +54 9 11 5555 1234">
-                        </div>
-                        <div class="form-group">
-                            <label for="checkout-address">Dirección de Entrega *</label>
-                            <input type="text" id="checkout-address" required placeholder="Calle 123, Piso 2 Dto B, Localidad">
-                        </div>
-                        <div class="form-row">
+                        
+                        <!-- Campos de entrega y pago específicos para particulares -->
+                        <div id="checkout-particular-fields" style="display: none;">
                             <div class="form-group">
-                                <label for="checkout-date">Fecha de Entrega *</label>
-                                <input type="date" id="checkout-date" required>
+                                <label for="checkout-phone">Teléfono / Celular *</label>
+                                <input type="tel" id="checkout-phone" placeholder="Ej. 1155551234">
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-address">Dirección de Entrega *</label>
+                                <input type="text" id="checkout-address" placeholder="Calle, número, piso, departamento">
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-date">Día de Entrega *</label>
+                                <input type="date" id="checkout-date">
                             </div>
                             <div class="form-group">
                                 <label for="checkout-time">Franja Horaria *</label>
-                                <select id="checkout-time" required>
-                                    <option value="" disabled selected>Selecciona horario</option>
-                                    <option value="Mediodía (12:00 a 14:00)">Mediodía (12:00 a 14:00)</option>
-                                    <option value="Tarde (14:00 a 17:00)">Tarde (14:00 a 17:00)</option>
-                                    <option value="Noche (20:00 a 22:00)">Noche (20:00 a 22:00)</option>
+                                <select id="checkout-time">
+                                    <option value="Domingo (18:00 a 21:00)">Domingo (18:00 a 21:00)</option>
+                                    <option value="Lunes (09:00 a 12:00)">Lunes (09:00 a 12:00)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-payment">Método de Pago *</label>
+                                <select id="checkout-payment">
+                                    <option value="Efectivo">Efectivo (en la entrega)</option>
+                                    <option value="Transferencia">Transferencia Bancaria</option>
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label for="checkout-payment">Método de Pago *</label>
-                            <select id="checkout-payment" required>
-                                <option value="" disabled selected>Selecciona pago</option>
-                                <option value="Efectivo">Efectivo al recibir</option>
-                                <option value="Transferencia">Transferencia Bancaria</option>
-                                <option value="Mercado Pago">Mercado Pago (Dinero en cuenta o tarjeta)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="checkout-notes">Notas del Pedido</label>
-                            <textarea id="checkout-notes" rows="3" placeholder="Restricciones alimenticias, timbre roto, dejar en portería, etc."></textarea>
+                            <label for="checkout-notes">Notas / Aclaraciones del Pedido</label>
+                            <textarea id="checkout-notes" rows="3" placeholder="Ej. Sin cebolla, alergias, aclaraciones de entrega, etc."></textarea>
                         </div>
                         
                         <div style="margin-top: 2rem; display: flex; gap: 1rem;">
@@ -141,7 +247,7 @@
                         </div>
                         <div class="total-row">
                             <span>Envío</span>
-                            <span id="checkout-shipping">$500</span>
+                            <span id="checkout-shipping">$4.500</span>
                         </div>
                         <div class="total-row grand-total">
                             <span>Total</span>
@@ -171,14 +277,24 @@
         <section id="view-admin" class="view-section" style="display: none;">
             <div class="admin-container">
                 <!-- Sidebar -->
-                <aside class="admin-sidebar">
-                    <h3>Panel de Control</h3>
-                    <ul class="sidebar-menu">
-                        <li class="sidebar-item active" id="side-orders-btn" onclick="app.switchAdminTab('orders')">
-                            📋 Pedidos
-                        </li>
-                        <li class="sidebar-item" id="side-menu-btn" onclick="app.switchAdminTab('menu')">
-                            🍔 Gestionar Menú
+                <aside class="admin-sidebar" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 400px;">
+                    <div>
+                        <h3 id="admin-sidebar-title">Panel de Control</h3>
+                        <ul class="sidebar-menu">
+                            <li class="sidebar-item active" id="side-orders-btn" onclick="app.switchAdminTab('orders')">
+                                📋 Pedidos
+                            </li>
+                            <li class="sidebar-item" id="side-menu-btn" onclick="app.switchAdminTab('menu')">
+                                🍔 Gestionar Menú
+                            </li>
+                            <li class="sidebar-item" id="side-companies-btn" onclick="app.switchAdminTab('companies')">
+                                🏢 Empresas Clientes
+                            </li>
+                        </ul>
+                    </div>
+                    <ul class="sidebar-menu" style="margin-top: auto; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
+                        <li class="sidebar-item" onclick="app.handleLogout()" style="color: #ef4444; font-weight: 600; cursor: pointer;">
+                            🚪 Cerrar Sesión
                         </li>
                     </ul>
                 </aside>
@@ -215,14 +331,19 @@
 
                         <!-- Orders List Card -->
                         <div class="admin-panel-card" style="margin-top: 1.5rem;">
-                            <div class="panel-header">
+                            <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
                                 <h3 style="font-size: 1.3rem;">Listado de Pedidos</h3>
-                                <div class="panel-filters">
-                                    <button class="filter-btn active" onclick="app.filterOrders('all', this)">Todos</button>
-                                    <button class="filter-btn" onclick="app.filterOrders('pendiente', this)">Pendientes</button>
-                                    <button class="filter-btn" onclick="app.filterOrders('en_cocina', this)">En Cocina</button>
-                                    <button class="filter-btn" onclick="app.filterOrders('entregado', this)">Entregados</button>
-                                    <button class="filter-btn" onclick="app.filterOrders('cancelado', this)">Cancelados</button>
+                                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                    <div class="panel-filters">
+                                        <button class="filter-btn active" onclick="app.filterOrders('all', this)">Todos</button>
+                                        <button class="filter-btn" onclick="app.filterOrders('pendiente', this)">Pendientes</button>
+                                        <button class="filter-btn" onclick="app.filterOrders('en_cocina', this)">En Cocina</button>
+                                        <button class="filter-btn" onclick="app.filterOrders('entregado', this)">Entregados</button>
+                                        <button class="filter-btn" onclick="app.filterOrders('cancelado', this)">Cancelados</button>
+                                    </div>
+                                    <button class="btn-primary" onclick="app.exportOrdersToCSV()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; color: var(--white);">
+                                        📥 Exportar CSV
+                                    </button>
                                 </div>
                             </div>
                             <div class="table-container">
@@ -231,8 +352,9 @@
                                         <tr>
                                             <th>ID Pedido</th>
                                             <th>Cliente</th>
-                                            <th>Detalle</th>
-                                            <th>Entrega</th>
+                                            <th>Empresa</th>
+                                            <th>Pedido</th>
+                                            <th>Notas del Pedido</th>
                                             <th>Total</th>
                                             <th>Estado</th>
                                             <th>Acción</th>
@@ -261,6 +383,31 @@
                         </div>
                     </div>
 
+                    <!-- TAB 3: Gestión de Empresas Clientes (Solo Corporativo) -->
+                    <div id="admin-tab-companies" class="admin-tab" style="display: none;">
+                        <div class="admin-panel-card">
+                            <div class="panel-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%; margin-bottom: 1.5rem;">
+                                <h3 style="font-size: 1.3rem;">Empresas Clientes Autorizadas</h3>
+                                <button class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="app.openCompanyModal()">
+                                    + Agregar Empresa
+                                </button>
+                            </div>
+                            <div class="table-container">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 75%; text-align: left; padding-left: 1.5rem;">Nombre de la Empresa</th>
+                                            <th style="width: 25%; text-align: center;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="companies-table-body">
+                                        <!-- Dinámico -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -278,6 +425,7 @@
             <!-- Dinámico -->
         </div>
         <div class="cart-footer">
+            <div id="cart-shipping-promo" style="font-size: 0.85rem; padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); margin-bottom: 1rem; text-align: center; font-weight: 600; display: none;"></div>
             <div class="cart-totals">
                 <div class="total-row">
                     <span>Subtotal</span>
@@ -333,6 +481,15 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="menu-type-select">Cocina / Catálogo *</label>
+                    <select id="menu-type-select" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; background: var(--white); cursor: pointer;">
+                        <option value="particular">Clientes Particulares</option>
+                        <option value="corporativo">Clientes Corporativos</option>
+                        <option value="ambos">Ambos Catálogos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="menu-tag">Etiqueta Especial (Opcional)</label>
                     <input type="text" id="menu-tag" placeholder="Ej. Más Vendido, Picante, Sin TACC">
                 </div>
@@ -357,7 +514,7 @@
 
     <!-- MODAL EDITAR PEDIDO (Admin) -->
     <div class="modal-overlay" id="order-modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 400px;">
             <h3 class="modal-title">Editar Pedido</h3>
             <form id="order-form" onsubmit="app.handleOrderSubmit(event)">
                 <input type="hidden" id="order-id-field">
@@ -367,59 +524,55 @@
                     <input type="text" id="order-customerName" required>
                 </div>
                 
-                <div class="form-group">
-                    <label for="order-phone">Teléfono (WhatsApp) *</label>
-                    <input type="tel" id="order-phone" required>
+                <div class="form-group" id="order-companyName-group">
+                    <label for="order-companyName">Empresa / Oficina (solo Corporativo)</label>
+                    <input type="text" id="order-companyName" placeholder="Ej. TechCorp">
                 </div>
                 
                 <div class="form-group">
-                    <label for="order-address">Dirección de Entrega *</label>
-                    <input type="text" id="order-address" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="order-deliveryDate">Fecha de Entrega *</label>
-                        <input type="date" id="order-deliveryDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="order-deliveryTime">Horario *</label>
-                        <select id="order-deliveryTime" required>
-                            <option value="Mediodía (12:00 a 14:00)">Mediodía (12:00 a 14:00)</option>
-                            <option value="Tarde (14:00 a 17:00)">Tarde (14:00 a 17:00)</option>
-                            <option value="Noche (20:00 a 22:00)">Noche (20:00 a 22:00)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="order-paymentMethod">Método de Pago *</label>
-                        <select id="order-paymentMethod" required>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia">Transferencia</option>
-                            <option value="Mercado Pago">Mercado Pago</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="order-status">Estado del Pedido *</label>
-                        <select id="order-status" required>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="en_cocina">En Cocina</option>
-                            <option value="entregado">Entregado</option>
-                            <option value="cancelado">Cancelado</option>
-                        </select>
-                    </div>
+                    <label for="order-status">Estado del Pedido *</label>
+                    <select id="order-status" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_cocina">En Cocina</option>
+                        <option value="entregado">Entregado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="order-notes">Notas del Pedido</label>
-                    <textarea id="order-notes" rows="2"></textarea>
+                    <textarea id="order-notes" rows="3" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;"></textarea>
                 </div>
                 
-                <div class="modal-footer">
+                <div id="order-particular-details" style="display: none; background: var(--primary-light); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 0.8rem; margin-top: 1rem; font-size: 0.85rem; line-height: 1.4; color: var(--dark);"></div>
+                
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label style="font-weight: 700; color: var(--dark); font-size: 0.9rem;">Platos Solicitados</label>
+                    <div id="order-items-list" style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.8rem; margin-top: 0.4rem; max-height: 160px; overflow-y: auto; font-size: 0.88rem; line-height: 1.4; color: var(--dark-muted);">
+                        <!-- Carga dinámica de platos del pedido -->
+                    </div>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 2rem;">
                     <button type="button" class="btn-secondary" onclick="app.closeOrderModal()">Cancelar</button>
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR EMPRESA (Admin) -->
+    <div class="modal-overlay" id="company-modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 class="modal-title">Agregar Empresa Cliente</h3>
+            <form id="company-form" onsubmit="app.handleCompanySubmit(event)">
+                <div class="form-group">
+                    <label for="company-name-input">Nombre de la Empresa *</label>
+                    <input type="text" id="company-name-input" required placeholder="Ej. TechCorp, Estudio Contable" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                </div>
+                <div class="modal-footer" style="margin-top: 2rem;">
+                    <button type="button" class="btn-secondary" onclick="app.closeCompanyModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Empresa</button>
                 </div>
             </form>
         </div>
