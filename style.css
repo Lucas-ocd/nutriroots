@@ -1,41 +1,73 @@
 /* style.css - Diseño Premium para ViandaFlow */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
 
 :root {
     --primary: #ff5e36;
     --primary-hover: #e04822;
     --primary-light: #fff2ee;
     --secondary: #ffb800;
-    --dark: #121824;
-    --dark-muted: #4b5563;
-    --light: #faf8f5;
+    --dark: #0f172a;
+    --dark-muted: #64748b;
+    --light: #f8fafc;
     --white: #ffffff;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
     --green-success: #10b981;
     --green-success-light: #ecfdf5;
     --blue-info: #3b82f6;
     --blue-info-light: #eff6ff;
     --yellow-warning: #f59e0b;
     --yellow-warning-light: #fef3c7;
-    
-    --font-sans: 'Outfit', sans-serif;
+
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-serif: 'Playfair Display', serif;
     
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-    --shadow-premium: 0 20px 25px -5px rgba(255, 94, 54, 0.1), 0 10px 10px -5px rgba(255, 94, 54, 0.04);
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+    --shadow-premium: 0 20px 25px -5px rgba(255, 94, 54, 0.15), 0 10px 10px -5px rgba(255, 94, 54, 0.05);
     
     --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-lg: 24px;
     --radius-full: 9999px;
     
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Temas dinámicos de Cocinas */
+body.theme-nutriroots {
+    --primary: #ff5e36;
+    --primary-hover: #e04822;
+    --primary-light: #fff2ee;
+    --shadow-premium: 0 20px 25px -5px rgba(255, 94, 54, 0.15), 0 10px 10px -5px rgba(255, 94, 54, 0.05);
+}
+
+body.theme-corporativo {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --shadow-premium: 0 20px 25px -5px rgba(37, 99, 235, 0.15), 0 10px 10px -5px rgba(37, 99, 235, 0.05);
+}
+
+/* Landing Page Hover Effects */
+.landing-card {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, box-shadow 0.3s !important;
+}
+.landing-card:hover {
+    transform: translateY(-6px) !important;
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-premium) !important;
+}
+.landing-card button {
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.landing-card:hover button {
+    transform: scale(1.02) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
 /* Reset y Estilos Generales */
@@ -89,6 +121,10 @@ a {
 
 .nav-brand span {
     color: var(--primary);
+}
+
+#brand-logo, #hero-banner-img {
+    mix-blend-mode: multiply;
 }
 
 .brand-icon {
@@ -1190,8 +1226,8 @@ footer {
     box-shadow: var(--shadow-sm);
 }
 
-.menu-list-day.opcion-1 { background: linear-gradient(135deg, #ff5e36, #ff7e5f); }
-.menu-list-day.opcion-2 { background: linear-gradient(135deg, #10b981, #34d399); }
+.menu-list-day.opcion-1, .menu-list-day.opcion-3, .menu-list-day.opcion-5, .menu-list-day.opcion-7, .menu-list-day.opcion-9 { background: linear-gradient(135deg, #ff5e36, #ff7e5f); }
+.menu-list-day.opcion-2, .menu-list-day.opcion-4, .menu-list-day.opcion-6, .menu-list-day.opcion-8, .menu-list-day.opcion-10 { background: linear-gradient(135deg, #10b981, #34d399); }
 
 .menu-list-img {
     width: 80px;
