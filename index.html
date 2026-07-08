@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de pedidos de viandas</title>
+    <title>NutriRoots — Viandas saludables a domicilio</title>
+    <meta name="description" content="Pedí viandas caseras y saludables en Buenos Aires. Menú semanal, entrega a domicilio y opciones corporativas para empresas.">
+    <meta property="og:title" content="NutriRoots — Viandas saludables">
+    <meta property="og:description" content="Comida casera lista para disfrutar. Elegí tu menú semanal y recibilo en tu hogar u oficina.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_AR">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,24 +38,24 @@
         <!-- VISTA LANDING: Selección Inicial -->
         <section id="view-landing" class="view-section" style="display: block;">
             <div class="landing-container" style="max-width: 800px; margin: 4rem auto; padding: 0 1.5rem; text-align: center;">
+                <img src="logo1.svg" alt="NutriRoots Logo" style="height: 120px; width: auto; object-fit: contain; mix-blend-mode: multiply; margin-bottom: 1rem;" onerror="this.style.display='none'">
                 <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--dark);">Bienvenido a <span style="color: var(--primary);">NutriRoots</span></h1>
-                <p style="font-size: 1.1rem; color: var(--gray-600); margin-bottom: 3rem;">¿Para quién es tu pedido de viandas hoy?</p>
+                <p style="font-size: 1.15rem; color: var(--gray-600); margin-bottom: 1.5rem; line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">Comidas saludables, caseras y listas en minutos. En NutriRoots elaboramos viandas congeladas con ingredientes de primera calidad y recetas equilibradas para que disfrutes una alimentación práctica, rica y nutritiva. Elegí tus platos favoritos, guardalos en el freezer y tené siempre una comida lista cuando la necesites.</p>
+                <p style="font-size: 1.1rem; color: var(--dark); font-weight: 600; margin-bottom: 3rem;">¿Para quién es tu pedido de viandas hoy?</p>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
                     <!-- Opción Particulares -->
                     <div class="landing-card" onclick="app.selectLandingOption('particular')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
                         <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏠</div>
                         <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Particulares</h2>
-                        <p style="color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2rem;">Viandas caseras y saludables, entregadas directamente en la puerta de tu hogar.</p>
-                        <button class="btn-primary" style="width: 100%;">Ingresar al Catálogo</button>
+                        <button class="btn-primary" style="width: 100%; margin-top: 1rem;">Ingresar al Catálogo</button>
                     </div>
                     
                     <!-- Opción Corporativos -->
                     <div class="landing-card" onclick="app.selectLandingOption('corporativo')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
                         <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏢</div>
                         <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Corporativos</h2>
-                        <p style="color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2rem;">Almuerzos premium y nutritivos para equipos de trabajo y empresas.</p>
-                        <button class="btn-secondary" style="width: 100%;">Acceso Corporativo</button>
+                        <button class="btn-secondary" style="width: 100%; margin-top: 1rem;">Acceso Corporativo</button>
                     </div>
                 </div>
             </div>
@@ -134,7 +139,7 @@
                     </div>
                 </div>
                 <div class="hero-image-container">
-                    <img class="hero-image" id="hero-banner-img" src="logo1.svg" alt="NutriRoots Logo" style="object-fit: contain; background-color: transparent; box-shadow: none;" onerror="app.handleHeroLogoError(this)">
+                    <img class="hero-image" id="hero-banner-img" src="logo1.svg" alt="NutriRoots Logo" style="object-fit: contain; mix-blend-mode: multiply; padding: 1rem; box-shadow: none; border-radius: 0; background: transparent; max-height: 250px;" onerror="app.handleHeroLogoError(this)">
                 </div>
             </div>
 
@@ -170,7 +175,7 @@
                 <div class="checkout-card">
                     <h3>Confirmación del Pedido</h3>
                     <form id="checkout-form" onsubmit="app.handleCheckoutSubmit(event)">
-                        <div class="form-group">
+                        <div class="form-group" style="display: none;">
                             <label for="checkout-type">¿Cómo realizas tu pedido? *</label>
                             <select id="checkout-type" onchange="app.handleCheckoutTypeChange()" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; font-weight: 600; background: var(--white); cursor: pointer;">
                                 <option value="particular">Particular (A Domicilio)</option>
@@ -247,7 +252,7 @@
                         </div>
                         <div class="total-row">
                             <span>Envío</span>
-                            <span id="checkout-shipping">$4.500</span>
+                            <span id="checkout-shipping">Calculando...</span>
                         </div>
                         <div class="total-row grand-total">
                             <span>Total</span>
@@ -263,11 +268,8 @@
             <div class="success-screen">
                 <div class="success-icon">✓</div>
                 <h2>¡Pedido Registrado con Éxito!</h2>
-                <p>El pedido se ha guardado en nuestro panel de gestión. Para asegurar la entrega inmediata, por favor envía el resumen a nuestro WhatsApp.</p>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <a id="btn-whatsapp-send" href="#" target="_blank" class="btn-primary" style="background-color: #25d366; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
-                        💬 Enviar Mensaje a WhatsApp
-                    </a>
+                <p>El pedido se ha guardado en nuestro panel de gestión. A la brevedad te llegará la confirmación vía WhatsApp con el resumen de tu pedido y confirmación del mismo.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
                     <button class="btn-secondary" onclick="app.showView('client')">Seguir Comprando</button>
                 </div>
             </div>
@@ -396,8 +398,9 @@
                                 <table class="admin-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 75%; text-align: left; padding-left: 1.5rem;">Nombre de la Empresa</th>
-                                            <th style="width: 25%; text-align: center;">Acciones</th>
+                                            <th style="width: 50%; text-align: left; padding-left: 1.5rem;">Nombre de la Empresa</th>
+                                            <th style="width: 30%; text-align: left;">Contraseña</th>
+                                            <th style="width: 20%; text-align: center;">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="companies-table-body">
@@ -433,7 +436,7 @@
                 </div>
                 <div class="total-row">
                     <span>Envío</span>
-                    <span id="cart-shipping">$500</span>
+                    <span id="cart-shipping">Calculando...</span>
                 </div>
                 <div class="total-row grand-total">
                     <span>Total</span>
@@ -570,6 +573,10 @@
                     <label for="company-name-input">Nombre de la Empresa *</label>
                     <input type="text" id="company-name-input" required placeholder="Ej. TechCorp, Estudio Contable" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                 </div>
+                <div class="form-group">
+                    <label for="company-password-input">Contraseña de Acceso *</label>
+                    <input type="text" id="company-password-input" required placeholder="Ej. clave123" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                </div>
                 <div class="modal-footer" style="margin-top: 2rem;">
                     <button type="button" class="btn-secondary" onclick="app.closeCompanyModal()">Cancelar</button>
                     <button type="submit" class="btn-primary">Guardar Empresa</button>
@@ -582,18 +589,20 @@
     <footer>
         <div class="footer-content">
             <div>
-                <div class="footer-logo">🌱 Nutri<span>Roots</span></div>
-                <p class="footer-info">Alimentación consciente y viandas saludables preparadas con raíces naturales y vegetales frescos directos a tu mesa.</p>
+                <img src="" alt="NutriRoots Logo" style="height: 60px; width: auto; mix-blend-mode: multiply; margin-bottom: 1rem;" onerror="this.style.display='none'">
+                <div class="footer-logo" style="margin-top: 0.5rem;">Nutri<span>Roots</span></div>
             </div>
             <div class="footer-right">
-                <p>📍 Buenos Aires, Argentina</p>
-                <p>📞 +54 9 11 5555-5555</p>
-                <p style="margin-top: 1rem; color: var(--secondary)">Desarrollado para NutriRoots</p>
+                <p>📍 CABA y GBA OESTE— consultá tu zona</p>
+                <p>📞 <a href="tel:+5449 1126365636" style="color: inherit;">+54 9 11 26365636</a></p>
+                <p>🕐 Pedidos hasta el Jueves 20:00 hs</p>
+                <p>🚚 Entregas: domingo y lunes</p>
+                <p style="margin-top: 1rem; color: var(--secondary)">Seguinos en Instagram @nutrirootsfood</p>
             </div>
         </div>
         <div class="footer-copyright">
             <span>&copy; 2026 NutriRoots. Todos los derechos reservados.</span>
-            <span>Estilo Premium &bull; LocalStorage DB</span>
+            <span>Viandas &bull; Buenos Aires</span>
         </div>
     </footer>
 

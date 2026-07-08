@@ -41,6 +41,7 @@ class NutriRootsApp {
         // Verificar si ingresa con (?admin) directo, abrir login
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has("admin")) {
+            this.updateNavVisibility("login");
             this.showView("login");
             return;
         }
@@ -70,6 +71,7 @@ class NutriRootsApp {
         
         if (localMenu) {
             this.menu = JSON.parse(localMenu);
+            this.migrateMenuCategories();
         } else {
             // Unificar los menús iniciales asignando su tipo respectivo
             const retail = INITIAL_MENU_RETAIL.map(item => ({ ...item, type: "particular" }));
@@ -89,9 +91,15 @@ class NutriRootsApp {
         }
 
         if (localCompanies) {
-            this.companies = JSON.parse(localCompanies);
+            const parsed = JSON.parse(localCompanies);
+            this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+            localStorage.setItem(companiesKey, JSON.stringify(this.companies));
         } else {
-            this.companies = ["TechCorp", "Estudio Contable", "Banco Galicia"];
+            this.companies = [
+                { name: "TechCorp", password: "corp123" },
+                { name: "Estudio Contable", password: "corp123" },
+                { name: "Banco Galicia", password: "corp123" }
+            ];
             localStorage.setItem(companiesKey, JSON.stringify(this.companies));
         }
     }
@@ -106,6 +114,49 @@ class NutriRootsApp {
 
     saveCompaniesToLocalStorage() {
         localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
+    }
+
+    migrateMenuCategories() {
+        const defaults = [...INITIAL_MENU_RETAIL, ...INITIAL_MENU_CORP];
+        const defaultMap = new Map(defaults.map(item => [item.id, item.category]));
+        let changed = false;
+
+        this.menu = this.menu.map(item => {
+            if (!item.category || item.category.trim() === "") {
+                changed = true;
+                return { ...item, category: defaultMap.get(item.id) || "Clásicos" };
+            }
+            return item;
+        });
+
+        if (changed) {
+            this.saveMenuToLocalStorage();
+        }
+    }
+
+    getMenuDayClass(tag) {
+        if (!tag) return "menu-1";
+        const match = tag.match(/\d+/);
+        return match ? `menu-${match[0]}` : "menu-1";
+    }
+
+    updateNavVisibility(viewName) {
+        const cartToggle = document.getElementById("btn-cart-toggle");
+        const navClientLink = document.getElementById("nav-client-link");
+        const navAdminLink = document.getElementById("nav-admin-link");
+
+        const catalogViews = ["client", "checkout"];
+        const showCart = catalogViews.includes(viewName);
+
+        if (cartToggle) {
+            cartToggle.style.display = showCart ? "inline-flex" : "none";
+        }
+        if (navClientLink) {
+            navClientLink.style.display = viewName === "landing" ? "none" : "";
+        }
+        if (navAdminLink) {
+            navAdminLink.style.display = "";
+        }
     }
 
     // --- NAVEGACIÓN Y CONFIGURACIÓN MULTIEMPRESA ---
@@ -294,7 +345,9 @@ class NutriRootsApp {
         const password = document.getElementById("corporate-login-password").value;
         const errorMsg = document.getElementById("corporate-login-error-msg");
 
-        if (password === "corp123" && companySelect) {
+        const companyObj = this.companies.find(c => c.name === companySelect);
+
+        if (companyObj && password === companyObj.password) {
             if (errorMsg) errorMsg.style.display = "none";
             this.clientCompany = companySelect;
             this.setCatalogType('corporativo');
@@ -479,6 +532,10 @@ class NutriRootsApp {
                 const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
                 
                 const dayClass = item.tag ? item.tag.toLowerCase().replace("ó", "o").replace(" ", "-").replace("opcion", "menu") : 'menu-1';
+                const priceHtml = this.catalogType === 'corporativo' 
+                    ? '<div class="menu-list-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
+                    : `<div class="menu-list-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
+
                 return `
                     <div class="menu-list-row" style="opacity: ${isAvailable ? 1 : 0.6}">
                         <div class="menu-list-day ${dayClass}">${displayTag}</div>
@@ -487,7 +544,7 @@ class NutriRootsApp {
                             <h3 class="menu-list-title">${displayTag}: ${displayName}</h3>
                             <p class="menu-list-desc">${item.description}</p>
                         </div>
-                        <div class="menu-list-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>
+                        ${priceHtml}
                         <div class="menu-list-action">
                             ${qtyHtml}
                         </div>
@@ -507,6 +564,10 @@ class NutriRootsApp {
                 const displayTag = item.tag ? item.tag.replace(/Opción/gi, "Menú") : "";
                 const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
 
+                const priceHtml = this.catalogType === 'corporativo' 
+                    ? '<div class="menu-card-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
+                    : `<div class="menu-card-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
+
                 return `
                     <div class="menu-card" style="opacity: ${isAvailable ? 1 : 0.7}">
                         ${hasTag ? `<div class="menu-card-badge ${!isAvailable ? 'out-of-stock' : ''}">${displayTag}</div>` : ''}
@@ -518,7 +579,7 @@ class NutriRootsApp {
                             <h3 class="menu-card-title">${displayTag ? `${displayTag}: ` : ''}${displayName}</h3>
                             <p class="menu-card-desc">${item.description}</p>
                             <div class="menu-card-footer">
-                                <div class="menu-card-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>
+                                ${priceHtml}
                                 <button class="btn-add-cart" 
                                         onclick="app.addToCart('${item.id}')" 
                                         ${!isAvailable ? 'disabled' : ''}
@@ -661,12 +722,16 @@ class NutriRootsApp {
             const imageUrl = item.image && item.image.trim() !== "" 
                 ? item.image 
                 : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
+            const priceHtml = this.catalogType === 'corporativo'
+                ? `<div class="cart-item-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido</div>`
+                : `<div class="cart-item-price">$${item.price.toLocaleString("es-AR")}</div>`;
+
             return `
                 <div class="cart-item">
                     <img class="cart-item-img" src="${imageUrl}" alt="${item.name}">
                     <div class="cart-item-info">
                         <h4>${item.name}</h4>
-                        <div class="cart-item-price">$${item.price.toLocaleString("es-AR")}</div>
+                        ${priceHtml}
                     </div>
                     <div class="cart-item-quantity">
                         <button class="btn-qty" onclick="app.updateCartQuantity('${item.id}', -1)">-</button>
@@ -681,15 +746,19 @@ class NutriRootsApp {
         const shipping = this.getShippingCost();
         const grandTotal = subtotal + shipping;
 
-        subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
-        
-        if (shippingSpan) {
-            shippingSpan.innerHTML = shipping === 0 
-                ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
-                : `$${shipping.toLocaleString("es-AR")}`;
+        if (this.catalogType === 'corporativo') {
+            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">Empresa paga</span>`;
+            if (shippingSpan) shippingSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">-</span>`;
+            totalSpan.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa</span>`;
+        } else {
+            subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
+            if (shippingSpan) {
+                shippingSpan.innerHTML = shipping === 0 
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                    : `$${shipping.toLocaleString("es-AR")}`;
+            }
+            totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
         }
-        
-        totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
 
         // Mostrar promoción de envío
         if (promoDiv) {
@@ -737,17 +806,13 @@ class NutriRootsApp {
             });
         }
         
-        // Toggles corporate fields
+        // Ocultar siempre el grupo de empresa porque ya se preseleccionó en el login
         const corpFields = document.getElementById("checkout-company-group");
         const companySelect = document.getElementById("checkout-company-select");
         if (corpFields) {
-            corpFields.style.display = isParticular ? "none" : "block";
+            corpFields.style.display = "none";
             if (companySelect) {
-                if (!isParticular) {
-                    companySelect.setAttribute("required", "required");
-                } else {
-                    companySelect.removeAttribute("required");
-                }
+                companySelect.removeAttribute("required");
             }
         }
         
@@ -763,26 +828,35 @@ class NutriRootsApp {
         
         if (!container) return;
 
-        container.innerHTML = this.cart.map(item => `
-            <div class="summary-item">
-                <span class="summary-item-name">${item.name} <span class="summary-item-qty">x${item.quantity}</span></span>
-                <span>$${(item.price * item.quantity).toLocaleString("es-AR")}</span>
-            </div>
-        `).join("");
+        container.innerHTML = this.cart.map(item => {
+            const priceHtml = this.catalogType === 'corporativo'
+                ? `<span style="color: var(--dark-muted); font-size: 0.85rem;">Incluido</span>`
+                : `<span>$${(item.price * item.quantity).toLocaleString("es-AR")}</span>`;
+            return `
+                <div class="summary-item">
+                    <span class="summary-item-name">${item.name} <span class="summary-item-qty">x${item.quantity}</span></span>
+                    ${priceHtml}
+                </div>
+            `;
+        }).join("");
 
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const shipping = this.getShippingCost();
         const grandTotal = subtotal + shipping;
 
-        subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
-        
-        if (shippingSpan) {
-            shippingSpan.innerHTML = shipping === 0 
-                ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
-                : `$${shipping.toLocaleString("es-AR")}`;
+        if (this.catalogType === 'corporativo') {
+            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">Empresa paga</span>`;
+            if (shippingSpan) shippingSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">-</span>`;
+            totalSpan.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa</span>`;
+        } else {
+            subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
+            if (shippingSpan) {
+                shippingSpan.innerHTML = shipping === 0 
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                    : `$${shipping.toLocaleString("es-AR")}`;
+            }
+            totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
         }
-        
-        totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
     }
 
     handleCheckoutSubmit(event) {
@@ -900,11 +974,19 @@ class NutriRootsApp {
         message += `\n*--- DETALLE DEL PEDIDO ---*\n`;
         
         order.items.forEach(item => {
-            message += `• ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toLocaleString("es-AR")})\n`;
+            if (this.catalogType === 'corporativo') {
+                message += `• ${item.quantity}x ${item.name}\n`;
+            } else {
+                message += `• ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toLocaleString("es-AR")})\n`;
+            }
         });
         
-        message += `\n*Envío:* ${order.shipping === 0 ? 'Gratis' : `$${order.shipping.toLocaleString("es-AR")}`}\n`;
-        message += `*TOTAL A PAGAR: $${order.total.toLocaleString("es-AR")}*\n\n`;
+        if (this.catalogType !== 'corporativo') {
+            message += `\n*Envío:* ${order.shipping === 0 ? 'Gratis' : `$${order.shipping.toLocaleString("es-AR")}`}\n`;
+            message += `*TOTAL A PAGAR: $${order.total.toLocaleString("es-AR")}*\n\n`;
+        } else {
+            message += `\n*(Pedido Corporativo - Abonado por Empresa)*\n\n`;
+        }
         message += `Por favor, confirmame la recepción y pasame los detalles para completar el pedido. ¡Muchas gracias!`;
 
         const encodedText = encodeURIComponent(message);
@@ -936,7 +1018,7 @@ class NutriRootsApp {
             document.getElementById("side-menu-btn").classList.add("active");
             document.getElementById("admin-tab-menu").style.display = "block";
             this.renderMenuEditor();
-        } else if (tabName === "companies" && this.activeCompany === "corporativo") {
+        } else if (tabName === "companies") {
             if (sideCompaniesBtn) sideCompaniesBtn.classList.add("active");
             if (tabCompanies) tabCompanies.style.display = "block";
             this.renderCompaniesTable();
@@ -1479,7 +1561,7 @@ class NutriRootsApp {
 
         dropdown.innerHTML = `
             <option value="" disabled selected>Selecciona tu empresa...</option>
-            ${this.companies.map(c => `<option value="${c}">${c}</option>`).join("")}
+            ${this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("")}
         `;
     }
 
@@ -1494,7 +1576,8 @@ class NutriRootsApp {
         
         tbody.innerHTML = this.companies.map((company, index) => `
             <tr>
-                <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${company}</td>
+                <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${company.name}</td>
+                <td style="font-family: monospace; font-size: 0.9rem; color: var(--gray-600);">${company.password}</td>
                 <td style="text-align: center;">
                     <button class="btn-icon delete" onclick="app.deleteCompany(${index})" title="Eliminar Empresa" style="padding: 0.4rem 0.6rem; background: none; border: none; cursor: pointer; font-size: 1.1rem;">🗑️</button>
                 </td>
@@ -1518,13 +1601,15 @@ class NutriRootsApp {
     handleCompanySubmit(event) {
         event.preventDefault();
         const name = document.getElementById("company-name-input").value.trim();
-        if (name) {
+        const password = document.getElementById("company-password-input").value.trim();
+        
+        if (name && password) {
             // Evitar duplicados (insensible a mayúsculas/minúsculas)
-            if (this.companies.some(c => c.toLowerCase() === name.toLowerCase())) {
+            if (this.companies.some(c => c.name.toLowerCase() === name.toLowerCase())) {
                 alert("⚠️ Esta empresa ya se encuentra autorizada.");
                 return;
             }
-            this.companies.push(name);
+            this.companies.push({ name, password });
             this.saveCompaniesToLocalStorage();
             this.renderCompaniesTable();
             this.closeCompanyModal();
@@ -1533,7 +1618,7 @@ class NutriRootsApp {
     }
 
     deleteCompany(index) {
-        const companyName = this.companies[index];
+        const companyName = this.companies[index].name;
         if (confirm(`¿Estás seguro de que deseas eliminar permanentemente a la empresa "${companyName}"?\nLos empleados de esta empresa ya no podrán ingresar a realizar pedidos.`)) {
             this.companies.splice(index, 1);
             this.saveCompaniesToLocalStorage();
