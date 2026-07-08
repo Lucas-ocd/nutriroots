@@ -395,14 +395,14 @@ class NutriRootsApp {
                     const corpCompanySelect = document.getElementById("corporate-company-select");
                     if (corpCompanySelect) {
                         corpCompanySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' + 
-                            this.companies.map(c => `<option value="${c}">${c}</option>`).join("");
+                            this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
                     }
                 }
                 if (viewName === "checkout") {
                     const companySelect = document.getElementById("checkout-company-select");
                     if (companySelect) {
                         companySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' + 
-                            this.companies.map(c => `<option value="${c}">${c}</option>`).join("");
+                            this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
                     }
                     if (this.catalogType === "corporativo" && this.clientCompany) {
                         companySelect.value = this.clientCompany;
