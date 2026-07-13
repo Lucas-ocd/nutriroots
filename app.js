@@ -1,5 +1,19 @@
 // app.js - Lógica y gestión de estado de NutriRoots
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCHxqIi9eNN04OztdWnlZZgTKOhZCcVmmk",
+  authDomain: "nutriroots-f80fc.firebaseapp.com",
+  projectId: "nutriroots-f80fc",
+  storageBucket: "nutriroots-f80fc.firebasestorage.app",
+  messagingSenderId: "30226400776",
+  appId: "1:30226400776:web:1b1dd2255fd012dbcff3bd"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 class NutriRootsApp {
     constructor() {
         // Datos de configuración
@@ -25,9 +39,9 @@ class NutriRootsApp {
         document.addEventListener("DOMContentLoaded", () => this.init());
     }
 
-    init() {
+    async init() {
         this.activeCompany = "nutriroots";
-        this.loadLocalStorageData();
+        await this.loadData();
 
         // Verificar sesión de administración guardada
         const savedSession = sessionStorage.getItem("nr_admin_session");
@@ -60,59 +74,91 @@ class NutriRootsApp {
     }
 
     // --- MANEJO DE PERSISTENCIA ---
-    loadLocalStorageData() {
-        const menuKey = "nr_menu_unified_v2";
-        const ordersKey = "nr_orders_unified_v2";
-        const companiesKey = "nr_companies_unified_v2";
-        
-        const localMenu = localStorage.getItem(menuKey);
-        const localOrders = localStorage.getItem(ordersKey);
-        const localCompanies = localStorage.getItem(companiesKey);
-        
-        if (localMenu) {
-            this.menu = JSON.parse(localMenu);
-            this.migrateMenuCategories();
-        } else {
-            // Unificar los menús iniciales asignando su tipo respectivo
-            const retail = INITIAL_MENU_RETAIL.map(item => ({ ...item, type: "particular" }));
-            const corp = INITIAL_MENU_CORP.map(item => ({ ...item, type: "corporativo" }));
-            this.menu = [...retail, ...corp];
-            localStorage.setItem(menuKey, JSON.stringify(this.menu));
-        }
+    async loadData() {
+        try {
+            const menuDoc = await db.collection("nutriroots_data").doc("menu").get();
+            const ordersDoc = await db.collection("nutriroots_data").doc("orders").get();
+            const companiesDoc = await db.collection("nutriroots_data").doc("companies").get();
 
-        if (localOrders) {
-            this.orders = JSON.parse(localOrders);
-        } else {
-            // Unificar órdenes iniciales
-            const retailOrders = INITIAL_ORDERS_RETAIL.map(order => ({ ...order, type: "particular" }));
-            const corpOrders = INITIAL_ORDERS_CORP.map(order => ({ ...order, type: "corporativo" }));
-            this.orders = [...retailOrders, ...corpOrders];
-            localStorage.setItem(ordersKey, JSON.stringify(this.orders));
-        }
+            if (menuDoc.exists) {
+                this.menu = menuDoc.data().data;
+                this.migrateMenuCategories();
+            } else {
+                const localMenu = localStorage.getItem("nr_menu_unified_v2");
+                if (localMenu) {
+                    this.menu = JSON.parse(localMenu);
+                    this.migrateMenuCategories();
+                } else {
+                    const retail = INITIAL_MENU_RETAIL.map(item => ({ ...item, type: "particular" }));
+                    const corp = INITIAL_MENU_CORP.map(item => ({ ...item, type: "corporativo" }));
+                    this.menu = [...retail, ...corp];
+                }
+                this.saveMenuToLocalStorage();
+            }
 
-        if (localCompanies) {
-            const parsed = JSON.parse(localCompanies);
-            this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
-            localStorage.setItem(companiesKey, JSON.stringify(this.companies));
-        } else {
-            this.companies = [
-                { name: "TechCorp", password: "corp123" },
-                { name: "Estudio Contable", password: "corp123" },
-                { name: "Banco Galicia", password: "corp123" }
-            ];
-            localStorage.setItem(companiesKey, JSON.stringify(this.companies));
+            if (ordersDoc.exists) {
+                this.orders = ordersDoc.data().data;
+            } else {
+                const localOrders = localStorage.getItem("nr_orders_unified_v2");
+                if (localOrders) {
+                    this.orders = JSON.parse(localOrders);
+                } else {
+                    const retailOrders = INITIAL_ORDERS_RETAIL.map(order => ({ ...order, type: "particular" }));
+                    const corpOrders = INITIAL_ORDERS_CORP.map(order => ({ ...order, type: "corporativo" }));
+                    this.orders = [...retailOrders, ...corpOrders];
+                }
+                this.saveOrdersToLocalStorage();
+            }
+
+            if (companiesDoc.exists) {
+                const parsed = companiesDoc.data().data;
+                this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+            } else {
+                const localCompanies = localStorage.getItem("nr_companies_unified_v2");
+                if (localCompanies) {
+                    const parsed = JSON.parse(localCompanies);
+                    this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+                } else {
+                    this.companies = [
+                        { name: "TechCorp", password: "corp123" },
+                        { name: "Estudio Contable", password: "corp123" },
+                        { name: "Banco Galicia", password: "corp123" }
+                    ];
+                }
+                this.saveCompaniesToLocalStorage();
+            }
+            
+            console.log("Datos cargados correctamente desde Firebase.");
+        } catch (error) {
+            console.error("Error cargando Firebase, usando LocalStorage:", error);
+            // Fallback
+            const localMenu = localStorage.getItem("nr_menu_unified_v2");
+            if (localMenu) {
+                this.menu = JSON.parse(localMenu);
+                this.migrateMenuCategories();
+            }
+            const localOrders = localStorage.getItem("nr_orders_unified_v2");
+            if (localOrders) this.orders = JSON.parse(localOrders);
+            const localCompanies = localStorage.getItem("nr_companies_unified_v2");
+            if (localCompanies) {
+                const parsed = JSON.parse(localCompanies);
+                this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+            }
         }
     }
 
     saveMenuToLocalStorage() {
+        db.collection("nutriroots_data").doc("menu").set({ data: this.menu }).catch(console.error);
         localStorage.setItem("nr_menu_unified_v2", JSON.stringify(this.menu));
     }
 
     saveOrdersToLocalStorage() {
+        db.collection("nutriroots_data").doc("orders").set({ data: this.orders }).catch(console.error);
         localStorage.setItem("nr_orders_unified_v2", JSON.stringify(this.orders));
     }
 
     saveCompaniesToLocalStorage() {
+        db.collection("nutriroots_data").doc("companies").set({ data: this.companies }).catch(console.error);
         localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
     }
 
@@ -535,6 +581,15 @@ class NutriRootsApp {
                 const priceHtml = this.catalogType === 'corporativo' 
                     ? '<div class="menu-list-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
                     : `<div class="menu-list-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
+                
+                const macrosHtml = item.macros ? `
+                    <div class="macro-text-row" style="font-size: 0.8rem; color: var(--gray-600); margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        ${item.macros.kcal ? `<span><strong>Kcal:</strong> ${item.macros.kcal}</span>` : ''}
+                        ${item.macros.protein ? `<span><strong>Prot:</strong> ${item.macros.protein}g</span>` : ''}
+                        ${item.macros.carbs ? `<span><strong>Carbos:</strong> ${item.macros.carbs}g</span>` : ''}
+                        ${item.macros.fat ? `<span><strong>Grasas:</strong> ${item.macros.fat}g</span>` : ''}
+                    </div>
+                ` : '';
 
                 return `
                     <div class="menu-list-row" style="opacity: ${isAvailable ? 1 : 0.6}">
@@ -543,6 +598,7 @@ class NutriRootsApp {
                         <div class="menu-list-info">
                             <h3 class="menu-list-title">${displayTag}: ${displayName}</h3>
                             <p class="menu-list-desc">${item.description}</p>
+                            ${macrosHtml}
                         </div>
                         ${priceHtml}
                         <div class="menu-list-action">
@@ -568,6 +624,15 @@ class NutriRootsApp {
                     ? '<div class="menu-card-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
                     : `<div class="menu-card-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
 
+                const macrosHtml = item.macros ? `
+                    <div class="macro-text-row" style="font-size: 0.8rem; color: var(--gray-600); margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        ${item.macros.kcal ? `<span><strong>Kcal:</strong> ${item.macros.kcal}</span>` : ''}
+                        ${item.macros.protein ? `<span><strong>Prot:</strong> ${item.macros.protein}g</span>` : ''}
+                        ${item.macros.carbs ? `<span><strong>Carbos:</strong> ${item.macros.carbs}g</span>` : ''}
+                        ${item.macros.fat ? `<span><strong>Grasas:</strong> ${item.macros.fat}g</span>` : ''}
+                    </div>
+                ` : '';
+
                 return `
                     <div class="menu-card" style="opacity: ${isAvailable ? 1 : 0.7}">
                         ${hasTag ? `<div class="menu-card-badge ${!isAvailable ? 'out-of-stock' : ''}">${displayTag}</div>` : ''}
@@ -578,6 +643,7 @@ class NutriRootsApp {
                         <div class="menu-card-content">
                             <h3 class="menu-card-title">${displayTag ? `${displayTag}: ` : ''}${displayName}</h3>
                             <p class="menu-card-desc">${item.description}</p>
+                            ${macrosHtml}
                             <div class="menu-card-footer">
                                 ${priceHtml}
                                 <button class="btn-add-cart" 
@@ -1449,12 +1515,22 @@ class NutriRootsApp {
                 document.getElementById("menu-tag").value = item.tag || "";
                 document.getElementById("menu-image").value = item.image || "";
                 document.getElementById("menu-available").checked = item.available;
+                
+                document.getElementById("menu-kcal").value = item.macros?.kcal || "";
+                document.getElementById("menu-protein").value = item.macros?.protein || "";
+                document.getElementById("menu-carbs").value = item.macros?.carbs || "";
+                document.getElementById("menu-fat").value = item.macros?.fat || "";
             }
         } else {
             // Modo Creación
             title.innerText = "Agregar Nueva Vianda";
             document.getElementById("menu-type-select").value = "particular";
             document.getElementById("menu-available").checked = true;
+            
+            document.getElementById("menu-kcal").value = "";
+            document.getElementById("menu-protein").value = "";
+            document.getElementById("menu-carbs").value = "";
+            document.getElementById("menu-fat").value = "";
         }
         
         modal.style.display = "flex";
@@ -1479,6 +1555,17 @@ class NutriRootsApp {
         const tag = document.getElementById("menu-tag").value.trim();
         const image = document.getElementById("menu-image").value.trim();
         const available = document.getElementById("menu-available").checked;
+        
+        const kcal = document.getElementById("menu-kcal").value.trim();
+        const protein = document.getElementById("menu-protein").value.trim();
+        const carbs = document.getElementById("menu-carbs").value.trim();
+        const fat = document.getElementById("menu-fat").value.trim();
+        
+        const macros = {};
+        if (kcal) macros.kcal = kcal;
+        if (protein) macros.protein = protein;
+        if (carbs) macros.carbs = carbs;
+        if (fat) macros.fat = fat;
 
         if (id) {
             // Editar existente
@@ -1493,7 +1580,8 @@ class NutriRootsApp {
                     type,
                     tag,
                     image,
-                    available
+                    available,
+                    macros
                 };
             }
         } else {
@@ -1508,7 +1596,8 @@ class NutriRootsApp {
                 type,
                 tag,
                 image,
-                available
+                available,
+                macros
             });
         }
 

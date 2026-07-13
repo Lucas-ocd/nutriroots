@@ -483,6 +483,28 @@
                     </div>
                 </div>
                 
+                <div class="form-group" style="margin-top: 0.5rem;">
+                    <label style="font-size: 0.85rem; color: var(--gray-600); font-weight: 600; margin-bottom: 0.5rem;">Información Nutricional (Opcional)</label>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                        <div>
+                            <label for="menu-kcal" style="font-size: 0.75rem;">Kcal</label>
+                            <input type="number" id="menu-kcal" step="0.1" placeholder="Ej. 450">
+                        </div>
+                        <div>
+                            <label for="menu-protein" style="font-size: 0.75rem;">Prot. (g)</label>
+                            <input type="number" id="menu-protein" step="0.1" placeholder="Ej. 30">
+                        </div>
+                        <div>
+                            <label for="menu-carbs" style="font-size: 0.75rem;">Carbos (g)</label>
+                            <input type="number" id="menu-carbs" step="0.1" placeholder="Ej. 40">
+                        </div>
+                        <div>
+                            <label for="menu-fat" style="font-size: 0.75rem;">Grasas (g)</label>
+                            <input type="number" id="menu-fat" step="0.1" placeholder="Ej. 15">
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label for="menu-type-select">Cocina / Catálogo *</label>
                     <select id="menu-type-select" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; background: var(--white); cursor: pointer;">
@@ -607,6 +629,10 @@
     </footer>
 
     <!-- LOGIC SCRIPTS -->
+    <!-- Firebase SDK (Compat v8 api over v10) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
