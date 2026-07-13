@@ -1307,7 +1307,7 @@ class NutriRootsApp {
             return;
         }
         
-        let message = `*¡Hola ${order.customerName}!* Recibimos tu pedido (Código: ${order.id}) en nuestro Portal de Viandas. 🌱\n\n`;
+        let message = `*¡Hola ${order.customerName}!* Recibimos tu pedido (Código: ${order.id}) en nuestro Portal de Viandas. 🥕\n\n`;
         message += `*Detalle de tu Pedido:*\n`;
         order.items.forEach(item => {
             const menuItem = this.menu.find(m => m.id === item.id);
