@@ -195,12 +195,13 @@
                             <input type="text" id="checkout-name" required placeholder="Ej. Juan Pérez">
                         </div>
                         
+                        <div class="form-group">
+                            <label for="checkout-phone">Teléfono / Celular *</label>
+                            <input type="tel" id="checkout-phone" required placeholder="Ej. 1155551234">
+                        </div>
+                        
                         <!-- Campos de entrega y pago específicos para particulares -->
                         <div id="checkout-particular-fields" style="display: none;">
-                            <div class="form-group">
-                                <label for="checkout-phone">Teléfono / Celular *</label>
-                                <input type="tel" id="checkout-phone" placeholder="Ej. 1155551234">
-                            </div>
                             <div class="form-group">
                                 <label for="checkout-address">Dirección de Entrega *</label>
                                 <input type="text" id="checkout-address" placeholder="Calle, número, piso, departamento">
@@ -555,6 +556,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="order-phone">Teléfono / Celular</label>
+                    <input type="tel" id="order-phone" placeholder="Ej. 1155551234">
+                </div>
+                
+                <div class="form-group">
                     <label for="order-status">Estado del Pedido *</label>
                     <select id="order-status" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                         <option value="pendiente">Pendiente</option>
@@ -627,6 +633,15 @@
             <span>Viandas &bull; Buenos Aires</span>
         </div>
     </footer>
+
+    <!-- FLOATING CART BAR (Mobile friendly) -->
+    <div class="floating-cart-bar" id="floating-cart-bar" onclick="app.toggleCart()" style="display: none;">
+        <div class="floating-cart-info">
+            <span class="floating-cart-count" id="floating-cart-count">0</span>
+            <span class="floating-cart-text">Ver mi pedido</span>
+        </div>
+        <div class="floating-cart-total" id="floating-cart-total">$0</div>
+    </div>
 
     <!-- LOGIC SCRIPTS -->
     <!-- Firebase SDK (Compat v8 api over v10) -->

@@ -1371,3 +1371,67 @@ footer {
 .macro-badge.prot { background: #e0e7ff; color: #4f46e5; }
 .macro-badge.carb { background: #fef3c7; color: #d97706; }
 .macro-badge.fat { background: #dcfce7; color: #16a34a; }
+
+/* ==========================================
+   FLOATING CART BAR (MOBILE UX)
+   ========================================== */
+.floating-cart-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--primary);
+    color: var(--white);
+    border-radius: var(--radius-full);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(132, 204, 22, 0.4);
+    z-index: 999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: slideUp 0.3s ease forwards;
+}
+
+.floating-cart-bar:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(132, 204, 22, 0.5);
+    background-color: var(--primary-dark);
+}
+
+.floating-cart-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.floating-cart-count {
+    background-color: var(--white);
+    color: var(--primary-dark);
+    font-weight: 800;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.85rem;
+}
+
+.floating-cart-text {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.floating-cart-total {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+@keyframes slideUp {
+    from { bottom: -100px; opacity: 0; }
+    to { bottom: 20px; opacity: 1; }
+}

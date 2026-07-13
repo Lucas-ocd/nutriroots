@@ -466,6 +466,9 @@ class NutriRootsApp {
         // Cerrar carrito por si está abierto
         this.closeCart();
         
+        // Actualizar UI del carrito (mostrar/ocultar barra flotante)
+        this.updateCartUI();
+        
         // Scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -737,6 +740,7 @@ class NutriRootsApp {
     updateCartUI() {
         const countBadge = document.getElementById("cart-count");
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
+        const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         if (countBadge) {
             countBadge.innerText = totalItems;
@@ -746,6 +750,21 @@ class NutriRootsApp {
         const btnCheckout = document.getElementById("btn-cart-checkout");
         if (btnCheckout) {
             btnCheckout.disabled = totalItems === 0;
+        }
+
+        // Actualizar la barra flotante del carrito
+        const floatingBar = document.getElementById("floating-cart-bar");
+        const floatingCount = document.getElementById("floating-cart-count");
+        const floatingTotal = document.getElementById("floating-cart-total");
+        
+        if (floatingBar) {
+            if (totalItems > 0 && this.currentView === "client") {
+                floatingBar.style.display = "flex";
+                if (floatingCount) floatingCount.innerText = totalItems;
+                if (floatingTotal) floatingTotal.innerText = `$${subtotal.toLocaleString("es-AR")}`;
+            } else {
+                floatingBar.style.display = "none";
+            }
         }
     }
 
@@ -940,8 +959,10 @@ class NutriRootsApp {
         const companyName = !isParticular ? document.getElementById("checkout-company-select").value : "";
         const notes = document.getElementById("checkout-notes").value.trim();
         
+        // Datos obligatorios para todos
+        const phone = document.getElementById("checkout-phone").value.trim();
+        
         // Datos condicionales de entrega/pago para particulares
-        const phone = isParticular ? document.getElementById("checkout-phone").value.trim() : "";
         const address = isParticular ? document.getElementById("checkout-address").value.trim() : "";
         const deliveryDate = isParticular ? document.getElementById("checkout-date").value : "";
         const deliveryTime = isParticular ? document.getElementById("checkout-time").value : "";
@@ -1324,6 +1345,7 @@ class NutriRootsApp {
         
         document.getElementById("order-id-field").value = order.id;
         document.getElementById("order-customerName").value = order.customerName;
+        document.getElementById("order-phone").value = order.phone || "";
         document.getElementById("order-status").value = order.status;
         document.getElementById("order-notes").value = order.notes || "";
         
@@ -1407,6 +1429,7 @@ class NutriRootsApp {
         const companyName = this.activeCompany === "corporativo"
             ? document.getElementById("order-companyName").value.trim()
             : "";
+        const phone = document.getElementById("order-phone").value.trim();
         const status = document.getElementById("order-status").value;
         const notes = document.getElementById("order-notes").value.trim();
 
@@ -1414,6 +1437,7 @@ class NutriRootsApp {
         if (order) {
             order.customerName = name;
             order.companyName = companyName;
+            order.phone = phone;
             order.status = status;
             order.notes = notes;
             
