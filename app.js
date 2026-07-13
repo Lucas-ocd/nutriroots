@@ -707,9 +707,6 @@ class NutriRootsApp {
 
         this.updateCartUI();
         this.renderMenuGrid(); // Re-renderizar para reflejar el selector de cantidades en fila
-        
-        // Feedback visual rápido
-        this.openCartBriefly();
     }
 
     openCartBriefly() {
