@@ -832,7 +832,7 @@ class NutriRootsApp {
         const grandTotal = subtotal + shipping;
 
         if (this.catalogType === 'corporativo') {
-            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">Empresa paga</span>`;
+            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">0</span>`;
             if (shippingSpan) shippingSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">-</span>`;
             totalSpan.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa</span>`;
         } else {
@@ -930,7 +930,7 @@ class NutriRootsApp {
         const grandTotal = subtotal + shipping;
 
         if (this.catalogType === 'corporativo') {
-            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">Empresa paga</span>`;
+            subtotalSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">0</span>`;
             if (shippingSpan) shippingSpan.innerHTML = `<span style="color: var(--dark-muted); font-size: 0.9rem;">-</span>`;
             totalSpan.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa</span>`;
         } else {
@@ -1313,7 +1313,12 @@ class NutriRootsApp {
             message += `• ${item.quantity}x ${displayTag}: ${displayName}\n`;
         });
         
-        message += `\n*Total a abonar:* $${order.total.toLocaleString("es-AR")}\n`;
+        if (!order.companyName) {
+            message += `\n*Total a abonar:* $${order.total.toLocaleString("es-AR")}\n`;
+        } else {
+            message += `\n*(Pedido Corporativo - Abonado por Empresa)*\n`;
+        }
+
         if (order.deliveryDate) {
             const dateFormatted = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {weekday: 'long', day: 'numeric', month: 'long'});
             message += `*Día de Entrega:* ${dateFormatted} (${order.deliveryTime})\n`;
@@ -1321,7 +1326,13 @@ class NutriRootsApp {
         if (order.address) {
             message += `*Dirección de Entrega:* ${order.address}\n`;
         }
-        message += `*Método de Pago:* ${order.paymentMethod}\n\n`;
+        
+        if (!order.companyName && order.paymentMethod) {
+            message += `*Método de Pago:* ${order.paymentMethod}\n\n`;
+        } else {
+            message += `\n`;
+        }
+        
         message += `Tu pedido ya se encuentra registrado y en preparación. ¡Muchas gracias por elegirnos!`;
 
         const encodedText = encodeURIComponent(message);
