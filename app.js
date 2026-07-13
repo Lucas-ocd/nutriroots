@@ -761,7 +761,11 @@ class NutriRootsApp {
             if (totalItems > 0 && this.currentView === "client") {
                 floatingBar.style.display = "flex";
                 if (floatingCount) floatingCount.innerText = totalItems;
-                if (floatingTotal) floatingTotal.innerText = `$${subtotal.toLocaleString("es-AR")}`;
+                if (floatingTotal) {
+                    floatingTotal.innerText = this.catalogType === 'corporativo' 
+                        ? '$0' 
+                        : `$${subtotal.toLocaleString("es-AR")}`;
+                }
             } else {
                 floatingBar.style.display = "none";
             }
