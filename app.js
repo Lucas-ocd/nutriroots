@@ -245,7 +245,7 @@ class NutriRootsApp {
         document.body.className = "theme-nutriroots";
         this.WHATSAPP_NUMBER = "5491155555555";
         
-        this.loadLocalStorageData();
+        // Datos ya cargados en init()
 
         const cartToggle = document.getElementById("btn-cart-toggle");
         if (cartToggle) cartToggle.style.display = "inline-flex";
