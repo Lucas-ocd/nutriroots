@@ -96,18 +96,45 @@ class NutriRootsApp {
                 this.saveMenuToLocalStorage();
             }
 
-            if (ordersDoc.exists) {
-                this.orders = ordersDoc.data().data;
+            // Nueva colección para documentos individuales
+            const ordersSnapshot = await db.collection("orders").get();
+            
+            if (!ordersSnapshot.empty) {
+                this.orders = ordersSnapshot.docs.map(doc => doc.data());
+                // Ordenar por ID descendente (más nuevos primero)
+                this.orders.sort((a, b) => {
+                    const idA = a.id || "";
+                    const idB = b.id || "";
+                    return idB.localeCompare(idA);
+                });
             } else {
-                const localOrders = localStorage.getItem("nr_orders_unified_v2");
-                if (localOrders) {
-                    this.orders = JSON.parse(localOrders);
+                // Fallback: si la colección está vacía, intentamos recuperar del doc viejo o localStorage
+                if (ordersDoc.exists) {
+                    this.orders = ordersDoc.data().data;
                 } else {
-                    const retailOrders = INITIAL_ORDERS_RETAIL.map(order => ({ ...order, type: "particular" }));
-                    const corpOrders = INITIAL_ORDERS_CORP.map(order => ({ ...order, type: "corporativo" }));
-                    this.orders = [...retailOrders, ...corpOrders];
+                    const localOrders = localStorage.getItem("nr_orders_unified_v2");
+                    if (localOrders) {
+                        this.orders = JSON.parse(localOrders);
+                    } else {
+                        const retailOrders = INITIAL_ORDERS_RETAIL.map(order => ({ ...order, type: "particular" }));
+                        const corpOrders = INITIAL_ORDERS_CORP.map(order => ({ ...order, type: "corporativo" }));
+                        this.orders = [...retailOrders, ...corpOrders];
+                    }
                 }
-                this.saveOrdersToLocalStorage();
+                
+                // MIGRACIÓN AUTOMÁTICA: Guardamos cada orden en su propio documento
+                this.orders.forEach(order => {
+                    if(order.id) {
+                        db.collection("orders").doc(order.id).set(order).catch(console.error);
+                    }
+                });
+                
+                // Ordenar por ID descendente
+                this.orders.sort((a, b) => {
+                    const idA = a.id || "";
+                    const idB = b.id || "";
+                    return idB.localeCompare(idA);
+                });
             }
 
             if (companiesDoc.exists) {
@@ -153,7 +180,8 @@ class NutriRootsApp {
     }
 
     saveOrdersToLocalStorage() {
-        db.collection("nutriroots_data").doc("orders").set({ data: this.orders }).catch(console.error);
+        // Ya NO guardamos el array gigante en Firebase para evitar race conditions.
+        // Solo mantenemos un caché local por si falla internet.
         localStorage.setItem("nr_orders_unified_v2", JSON.stringify(this.orders));
     }
 
@@ -1014,6 +1042,10 @@ class NutriRootsApp {
 
         // Guardar pedido en base de datos
         this.orders.push(newOrder);
+        // Guardar individualmente en Firebase
+        if (typeof db !== 'undefined') {
+            db.collection("orders").doc(newOrder.id).set(newOrder).catch(console.error);
+        }
         this.saveOrdersToLocalStorage();
 
         // Crear el mensaje para WhatsApp
@@ -1344,6 +1376,10 @@ class NutriRootsApp {
         const order = this.orders.find(o => o.id === orderId);
         if (order) {
             order.status = newStatus;
+            // Guardar individualmente en Firebase
+            if (typeof db !== 'undefined') {
+                db.collection("orders").doc(orderId).update({ status: newStatus }).catch(console.error);
+            }
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
@@ -1453,6 +1489,11 @@ class NutriRootsApp {
             order.status = status;
             order.notes = notes;
             
+            // Guardar individualmente en Firebase
+            if (typeof db !== 'undefined') {
+                db.collection("orders").doc(id).set(order).catch(console.error);
+            }
+            
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
@@ -1463,6 +1504,12 @@ class NutriRootsApp {
     deleteOrder(orderId) {
         if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el pedido ${orderId}?`)) {
             this.orders = this.orders.filter(o => o.id !== orderId);
+            
+            // Eliminar individualmente de Firebase
+            if (typeof db !== 'undefined') {
+                db.collection("orders").doc(orderId).delete().catch(console.error);
+            }
+            
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
