@@ -998,14 +998,15 @@ class NutriRootsApp {
         const paymentMethod = isParticular ? document.getElementById("checkout-payment").value : "";
 
         // Validar que el día de entrega sea Domingo o Lunes (sólo para particulares)
-        if (isParticular && deliveryDate) {
-            const dateObj = new Date(deliveryDate + 'T00:00:00');
-            const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 1 = Lunes
-            if (dayOfWeek !== 0 && dayOfWeek !== 1) {
-                alert("Las entregas solo se realizan los días Domingo o Lunes. Por favor, selecciona una fecha válida.");
-                return;
-            }
-        }
+        // Eliminado temporalmente para permitir pruebas cualquier día.
+        // if (isParticular && deliveryDate) {
+        //     const dateObj = new Date(deliveryDate + 'T00:00:00');
+        //     const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 1 = Lunes
+        //     if (dayOfWeek !== 0 && dayOfWeek !== 1) {
+        //         alert("Las entregas solo se realizan los días Domingo o Lunes. Por favor, selecciona una fecha válida.");
+        //         return;
+        //     }
+        // }
 
         // Generar un ID incremental o aleatorio único
         const orderNumber = 1000 + this.orders.length + 1;
@@ -1255,7 +1256,6 @@ class NutriRootsApp {
             `;
         }).join("");
     }
-
     translateStatus(status) {
         const statuses = {
             "pendiente": "Pendiente",
@@ -1277,52 +1277,70 @@ class NutriRootsApp {
         }
 
         // CSV Header
-        const headers = ["ID Pedido", "Fecha", "Cliente", "Empresa", "Pedido", "Notas del Pedido", "Subtotal", "Envío", "Total", "Estado"];
+        const headers = ["0", "#", "Nro de Pedido", "MENU", "Descripcion del menu", "CLIENTE", "Whastapp", "nombre y apellido", "Precio", "fecha de pedido", "Nota adicional", "ORDEN", "Localidad", "Direccion de enrtrega"];
         
         // CSV Rows
-        const rows = filteredOrders.map(order => {
-            const dateFormatted = new Date(order.createdAt).toLocaleDateString("es-AR") + " " + new Date(order.createdAt).toLocaleTimeString("es-AR", {hour: '2-digit', minute:'2-digit'});
-            const companyDisplay = order.companyName || "Cliente Particular";
-            const itemsDisplay = order.items.map(item => {
+        const rows = [];
+        let orderIndexCounter = 1;
+
+        // Invertimos la lista si se necesita, pero filteredOrders ya suele venir ordenada
+        // Iteramos los pedidos
+        filteredOrders.forEach(order => {
+            const dateObj = new Date(order.createdAt);
+            const dateStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear().toString().slice(-2)}`;
+            const nroPedido = orderIndexCounter++;
+            
+            // Iterar cada ítem del pedido
+            order.items.forEach(item => {
                 const menuItem = this.menu.find(m => m.id === item.id);
                 const rawTag = item.tag || (menuItem ? menuItem.tag : "");
-                const displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menú") : "Menú";
-                const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
-                return `${displayTag}: ${displayName} (x${item.quantity})`;
-            }).join(" | ");
-
-            const statusTranslate = this.translateStatus(order.status);
-            
-            return [
-                order.id,
-                dateFormatted,
-                order.customerName,
-                companyDisplay,
-                itemsDisplay,
-                order.notes || "",
-                order.subtotal,
-                order.shipping,
-                order.total,
-                statusTranslate
-            ].map(val => {
-                let cell = val === null || val === undefined ? '' : String(val);
-                cell = cell.replace(/"/g, '""');
-                if (cell.search(/("|,|\n)/g) >= 0) {
-                    cell = `"${cell}"`;
+                let displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menu") : "Menu";
+                displayTag = displayTag.replace(/Menú/gi, "Menu");
+                
+                const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "").trim() : "";
+                const orderNum = displayTag.replace(/\D/g, "");
+                
+                // Generar una fila por cada unidad (ej. si pide 2 del mismo plato, genera 2 filas)
+                for (let i = 0; i < item.quantity; i++) {
+                    const row = [
+                        "P0",
+                        "", // Columna #
+                        nroPedido,
+                        displayTag,
+                        displayName,
+                        "Accepted",
+                        "Whastapp", // Escrito exactamente como en el ejemplo
+                        order.customerName,
+                        `$${item.price.toLocaleString("es-AR")}`,
+                        dateStr,
+                        order.notes ? order.notes : "Nota adicional",
+                        orderNum,
+                        order.companyName || "", // Usamos Empresa como localidad si existe
+                        order.address || ""
+                    ];
+                    
+                    const formattedRow = row.map(val => {
+                        let cell = val === null || val === undefined ? '' : String(val);
+                        cell = cell.replace(/"/g, '""');
+                        // Cambiamos la búsqueda para que detecte el punto y coma (;)
+                        if (cell.search(/("|\n|;)/g) >= 0) {
+                            cell = `"${cell}"`;
+                        }
+                        return cell;
+                    });
+                    
+                    rows.push(formattedRow);
                 }
-                return cell;
             });
         });
 
-        // Generar archivo UTF-8 CSV con BOM
-        const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        // Generar archivo UTF-8 CSV con BOM usando punto y coma (;)
+        const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        
-        const dateStr = new Date().toISOString().slice(0,10);
         link.setAttribute("href", url);
-        link.setAttribute("download", `pedidos_${this.activeCompany}_${this.currentOrderFilter}_${dateStr}.csv`);
+        link.setAttribute("download", `pedidos_nutriroots_${new Date().toISOString().split('T')[0]}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
