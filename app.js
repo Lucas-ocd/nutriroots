@@ -600,7 +600,7 @@ class NutriRootsApp {
                       `
                     : `
                         <button class="btn-list-add" onclick="app.addToCart('${item.id}')" ${!isAvailable ? 'disabled' : ''}>
-                            ${isAvailable ? '+ Agregar' : 'Agotado'}
+                            ${isAvailable ? '+ Agregar' : 'Disponible a la venta'}
                         </button>
                       `;
 
@@ -667,7 +667,7 @@ class NutriRootsApp {
                 return `
                     <div class="menu-card" style="opacity: ${isAvailable ? 1 : 0.7}">
                         ${hasTag ? `<div class="menu-card-badge ${!isAvailable ? 'out-of-stock' : ''}">${displayTag}</div>` : ''}
-                        ${!isAvailable && !hasTag ? `<div class="menu-card-badge out-of-stock">Agotado</div>` : ''}
+                        ${!isAvailable && !hasTag ? `<div class="menu-card-badge out-of-stock">Disponible a la venta</div>` : ''}
                         <div class="menu-card-image-wrapper">
                             <img class="menu-card-image" src="${imageUrl}" alt="${displayName}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80'">
                         </div>
