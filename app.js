@@ -1188,13 +1188,24 @@ class NutriRootsApp {
                 const rawTag = item.tag || (menuItem ? menuItem.tag : "");
                 let displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menu").replace(/Menú/gi, "Menu") : "Menu";
                 
-                // Si el tag es solo "Menu", intentar agregar el número si está en el nombre (Ej: Menu 1)
-                if (displayTag.trim().toLowerCase() === "menu" || displayTag.trim() === "") {
-                    const match = (item.name || "").match(/Menu\s*(\d+)/i);
+                // Si el tag es genérico o dice "sin stock", intentar agregarlo usando el nombre
+                const isGeneric = displayTag.trim().toLowerCase() === "menu" || 
+                                  displayTag.trim() === "" || 
+                                  displayTag.trim().toLowerCase() === "sin stock";
+                                  
+                if (isGeneric) {
+                    const match = (item.name || "").match(/(?:Menu|Opción|Opci(?:o|ó)n|Men(?:u|ú))\s*(\d+)/i);
                     if (match) {
                         displayTag = "Menu " + match[1];
                     } else if (item.name) {
-                        displayTag = item.name.split(" ")[0] + " " + (item.name.split(" ")[1] || "");
+                        // Toma las dos primeras palabras del nombre si no encuentra un numero
+                        const nameParts = item.name.split(" ");
+                        displayTag = nameParts[0] + " " + (nameParts[1] || "");
+                        if (displayTag.toLowerCase().includes("sin stock")) {
+                            displayTag = "Menu";
+                        }
+                    } else {
+                        displayTag = "Menu";
                     }
                 }
 
