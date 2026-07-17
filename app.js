@@ -1184,7 +1184,20 @@ class NutriRootsApp {
                 viandasBreakdown[type] += item.quantity;
                 
                 // Popularidad de menus
-                const displayTag = item.tag ? item.tag.replace(/Opción/gi, "Menu").replace(/Menú/gi, "Menu") : "Menu";
+                const menuItem = this.menu.find(m => m.id === item.id);
+                const rawTag = item.tag || (menuItem ? menuItem.tag : "");
+                let displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menu").replace(/Menú/gi, "Menu") : "Menu";
+                
+                // Si el tag es solo "Menu", intentar agregar el número si está en el nombre (Ej: Menu 1)
+                if (displayTag.trim().toLowerCase() === "menu" || displayTag.trim() === "") {
+                    const match = (item.name || "").match(/Menu\s*(\d+)/i);
+                    if (match) {
+                        displayTag = "Menu " + match[1];
+                    } else if (item.name) {
+                        displayTag = item.name.split(" ")[0] + " " + (item.name.split(" ")[1] || "");
+                    }
+                }
+
                 if (!menuBreakdown[displayTag]) {
                     menuBreakdown[displayTag] = 0;
                 }
