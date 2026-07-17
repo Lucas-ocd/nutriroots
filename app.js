@@ -1146,16 +1146,45 @@ class NutriRootsApp {
         }
     }
 
+    getCustomViandaPrice(companyName, originalPrice) {
+        if (!companyName) return originalPrice;
+        const normalized = companyName.trim().toLowerCase();
+        if (normalized === 'orensano' || normalized === 'ayr') {
+            return 7600;
+        }
+        return originalPrice;
+    }
+
     updateAdminStats() {
         const totalRevenueSpan = document.getElementById("stat-revenue");
         const totalOrdersSpan = document.getElementById("stat-orders-count");
         const pendingSpan = document.getElementById("stat-pending-count");
+        const viandasSpan = document.getElementById("stat-viandas-count");
         
         if (!totalRevenueSpan) return;
 
         // Calcular ganancias solo de pedidos entregados o activos (no cancelados)
         const validOrders = this.orders.filter(order => order.status !== "cancelado");
-        const totalRevenue = validOrders.reduce((sum, order) => sum + order.total, 0);
+        let totalRevenue = 0;
+        let viandasBreakdown = {};
+
+        validOrders.forEach(order => {
+            let orderTotal = 0;
+            const type = order.companyName ? order.companyName.trim() : "Particular";
+            
+            if (!viandasBreakdown[type]) {
+                viandasBreakdown[type] = 0;
+            }
+
+            order.items.forEach(item => {
+                const cPrice = this.getCustomViandaPrice(order.companyName, item.price);
+                orderTotal += cPrice * item.quantity;
+                viandasBreakdown[type] += item.quantity;
+            });
+            orderTotal += order.shipping || 0;
+            totalRevenue += orderTotal;
+        });
+
         const totalOrdersCount = this.orders.length;
         
         // Pedidos que requieren acción (pendiente o en cocina)
@@ -1164,6 +1193,19 @@ class NutriRootsApp {
         totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
         totalOrdersSpan.innerText = totalOrdersCount;
         pendingSpan.innerText = pendingCount;
+        
+        if (viandasSpan) {
+            if (Object.keys(viandasBreakdown).length > 0) {
+                const breakdownHtml = Object.keys(viandasBreakdown).map(k => {
+                    return `<div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--gray-200); padding-bottom: 0.15rem; margin-bottom: 0.15rem; font-size: 0.85rem; color: var(--dark-muted);">
+                                <span>${k}</span> <span style="font-weight:700; color:var(--dark);">${viandasBreakdown[k]}</span>
+                            </div>`;
+                }).join('');
+                viandasSpan.innerHTML = `<div style="margin-top: 0.5rem;">${breakdownHtml}</div>`;
+            } else {
+                viandasSpan.innerHTML = "<div style='font-size:0.85rem; color:var(--gray-400); margin-top: 0.5rem;'>Sin datos</div>";
+            }
+        }
     }
 
     filterOrders(status, buttonElement) {
@@ -1220,6 +1262,12 @@ class NutriRootsApp {
                 minute: "2-digit"
             });
 
+            let calculatedTotal = 0;
+            order.items.forEach(item => {
+                calculatedTotal += this.getCustomViandaPrice(order.companyName, item.price) * item.quantity;
+            });
+            calculatedTotal += order.shipping || 0;
+
             return `
                 <tr>
                     <td style="font-weight: 700; color: var(--primary);">${order.id}</td>
@@ -1235,7 +1283,7 @@ class NutriRootsApp {
                     <td style="font-size: 0.85rem; line-height: 1.3; max-width: 200px; word-break: break-word;" title="${order.notes || ''}">
                         ${order.notes ? `_${order.notes}_` : '<span style="color: var(--gray-400);">Sin aclaraciones</span>'}
                     </td>
-                    <td style="font-weight: 700;">$${order.total.toLocaleString("es-AR")}</td>
+                    <td style="font-weight: 700;">$${calculatedTotal.toLocaleString("es-AR")}</td>
                     <td>
                         <span class="status-badge ${order.status}">${this.translateStatus(order.status)}</span>
                     </td>
@@ -1311,7 +1359,7 @@ class NutriRootsApp {
                         "Accepted",
                         "Whastapp", // Escrito exactamente como en el ejemplo
                         order.customerName,
-                        `$${item.price.toLocaleString("es-AR")}`,
+                        `$${this.getCustomViandaPrice(order.companyName, item.price).toLocaleString("es-AR")}`,
                         dateStr,
                         order.notes ? order.notes : "Nota adicional",
                         orderNum,
