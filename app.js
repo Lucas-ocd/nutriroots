@@ -1160,6 +1160,7 @@ class NutriRootsApp {
         const totalOrdersSpan = document.getElementById("stat-orders-count");
         const pendingSpan = document.getElementById("stat-pending-count");
         const viandasSpan = document.getElementById("stat-viandas-count");
+        const menuBreakdownContainer = document.getElementById("stat-menu-breakdown");
         
         if (!totalRevenueSpan) return;
 
@@ -1167,6 +1168,7 @@ class NutriRootsApp {
         const validOrders = this.orders.filter(order => order.status !== "cancelado");
         let totalRevenue = 0;
         let viandasBreakdown = {};
+        let menuBreakdown = {};
 
         validOrders.forEach(order => {
             let orderTotal = 0;
@@ -1180,6 +1182,13 @@ class NutriRootsApp {
                 const cPrice = this.getCustomViandaPrice(order.companyName, item.price);
                 orderTotal += cPrice * item.quantity;
                 viandasBreakdown[type] += item.quantity;
+                
+                // Popularidad de menus
+                const displayTag = item.tag ? item.tag.replace(/Opción/gi, "Menu").replace(/Menú/gi, "Menu") : "Menu";
+                if (!menuBreakdown[displayTag]) {
+                    menuBreakdown[displayTag] = 0;
+                }
+                menuBreakdown[displayTag] += item.quantity;
             });
             orderTotal += order.shipping || 0;
             totalRevenue += orderTotal;
@@ -1204,6 +1213,39 @@ class NutriRootsApp {
                 viandasSpan.innerHTML = `<div style="margin-top: 0.5rem;">${breakdownHtml}</div>`;
             } else {
                 viandasSpan.innerHTML = "<div style='font-size:0.85rem; color:var(--gray-400); margin-top: 0.5rem;'>Sin datos</div>";
+            }
+        }
+
+        if (menuBreakdownContainer) {
+            if (Object.keys(menuBreakdown).length > 0) {
+                // Sort by menu number
+                const sortedMenus = Object.keys(menuBreakdown).sort((a, b) => {
+                    const numA = parseInt(a.replace(/\D/g, "")) || 0;
+                    const numB = parseInt(b.replace(/\D/g, "")) || 0;
+                    return numA - numB;
+                });
+                
+                const maxQty = Math.max(...Object.values(menuBreakdown));
+                
+                const breakdownHtml = sortedMenus.map(menuTag => {
+                    const qty = menuBreakdown[menuTag];
+                    const percentage = Math.max(5, (qty / maxQty) * 100);
+                    return `
+                        <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span style="font-weight: 700; color: var(--dark);">${menuTag}</span>
+                                <span style="font-weight: 600; color: var(--primary);">${qty} unidades</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+                                <div style="width: ${percentage}%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+                
+                menuBreakdownContainer.innerHTML = breakdownHtml;
+            } else {
+                menuBreakdownContainer.innerHTML = "<div style='color: var(--gray-400); font-size: 0.9rem;'>No hay ventas registradas.</div>";
             }
         }
     }
