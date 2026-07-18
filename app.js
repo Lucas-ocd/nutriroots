@@ -108,33 +108,7 @@ class NutriRootsApp {
                     return idB.localeCompare(idA);
                 });
             } else {
-                // Fallback: si la colección está vacía, intentamos recuperar del doc viejo o localStorage
-                if (ordersDoc.exists) {
-                    this.orders = ordersDoc.data().data;
-                } else {
-                    const localOrders = localStorage.getItem("nr_orders_unified_v2");
-                    if (localOrders) {
-                        this.orders = JSON.parse(localOrders);
-                    } else {
-                        const retailOrders = INITIAL_ORDERS_RETAIL.map(order => ({ ...order, type: "particular" }));
-                        const corpOrders = INITIAL_ORDERS_CORP.map(order => ({ ...order, type: "corporativo" }));
-                        this.orders = [...retailOrders, ...corpOrders];
-                    }
-                }
-                
-                // MIGRACIÓN AUTOMÁTICA: Guardamos cada orden en su propio documento
-                this.orders.forEach(order => {
-                    if(order.id) {
-                        db.collection("orders").doc(order.id).set(order).catch(console.error);
-                    }
-                });
-                
-                // Ordenar por ID descendente
-                this.orders.sort((a, b) => {
-                    const idA = a.id || "";
-                    const idB = b.id || "";
-                    return idB.localeCompare(idA);
-                });
+                this.orders = [];
             }
 
             if (companiesDoc.exists) {
