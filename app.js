@@ -558,7 +558,7 @@ class NutriRootsApp {
 
         if (this.menuLayout === 'list') {
             container.innerHTML = filteredMenu.map(item => {
-                const isAvailable = item.available;
+                const isAvailable = item.available !== false && (item.stock == null || item.stock > 0);
                 const imageUrl = item.image && item.image.trim() !== "" 
                     ? item.image 
                     : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
@@ -616,7 +616,7 @@ class NutriRootsApp {
             // Cuadrícula (Grid)
             container.innerHTML = filteredMenu.map(item => {
                 const hasTag = item.tag && item.tag.trim() !== "";
-                const isAvailable = item.available;
+                const isAvailable = item.available !== false && (item.stock == null || item.stock > 0);
                 const imageUrl = item.image && item.image.trim() !== "" 
                     ? item.image 
                     : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
@@ -696,8 +696,16 @@ class NutriRootsApp {
         const cartItemIndex = this.cart.findIndex(item => item.id === itemId);
 
         if (cartItemIndex > -1) {
+            if (menuItem.stock != null && this.cart[cartItemIndex].quantity >= menuItem.stock) {
+                alert(`Solo quedan ${menuItem.stock} unidades de este menú.`);
+                return;
+            }
             this.cart[cartItemIndex].quantity += 1;
         } else {
+            if (menuItem.stock != null && menuItem.stock <= 0) {
+                alert(`Este menú se encuentra agotado.`);
+                return;
+            }
             this.cart.push({
                 id: menuItem.id,
                 name: menuItem.name,
@@ -724,6 +732,13 @@ class NutriRootsApp {
     updateCartQuantity(itemId, change) {
         const cartItemIndex = this.cart.findIndex(item => item.id === itemId);
         if (cartItemIndex === -1) return;
+        if (change > 0) {
+            const menuItem = this.menu.find(i => i.id === itemId);
+            if (menuItem && menuItem.stock != null && this.cart[cartItemIndex].quantity >= menuItem.stock) {
+                alert(`Solo quedan ${menuItem.stock} unidades de este menú.`);
+                return;
+            }
+        }
 
         this.cart[cartItemIndex].quantity += change;
 
@@ -1022,6 +1037,23 @@ class NutriRootsApp {
             db.collection("orders").doc(newOrder.id).set(newOrder).catch(console.error);
         }
         this.saveOrdersToLocalStorage();
+        
+        // Descontar stock de los items comprados
+        let menuUpdated = false;
+        this.cart.forEach(cartItem => {
+            const menuItem = this.menu.find(m => m.id === cartItem.id);
+            if (menuItem && menuItem.stock != null) {
+                menuItem.stock -= cartItem.quantity;
+                if (menuItem.stock < 0) menuItem.stock = 0;
+                menuUpdated = true;
+            }
+        });
+        
+        if (menuUpdated) {
+            this.saveMenuToLocalStorage();
+            this.renderMenuGrid();
+        }
+
 
         // Crear el mensaje para WhatsApp
         const waUrl = this.generateWhatsAppLink(newOrder);
@@ -1143,6 +1175,7 @@ class NutriRootsApp {
         let totalRevenue = 0;
         let viandasBreakdown = {};
         let menuBreakdown = {};
+        let totalViandasToCook = 0;
 
         validOrders.forEach(order => {
             let orderTotal = 0;
@@ -1157,31 +1190,9 @@ class NutriRootsApp {
                 orderTotal += cPrice * item.quantity;
                 viandasBreakdown[type] += item.quantity;
                 
-                // Popularidad de menus
-                const menuItem = this.menu.find(m => m.id === item.id);
-                const rawTag = item.tag || (menuItem ? menuItem.tag : "");
-                let displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menu").replace(/Menú/gi, "Menu") : "Menu";
-                
-                // Si el tag es genérico o dice "sin stock", intentar agregarlo usando el nombre
-                const isGeneric = displayTag.trim().toLowerCase() === "menu" || 
-                                  displayTag.trim() === "" || 
-                                  displayTag.trim().toLowerCase() === "sin stock";
-                                  
-                if (isGeneric) {
-                    const match = (item.name || "").match(/(?:Menu|Opción|Opci(?:o|ó)n|Men(?:u|ú))\s*(\d+)/i);
-                    if (match) {
-                        displayTag = "Menu " + match[1];
-                    } else if (item.name) {
-                        // Toma las dos primeras palabras del nombre si no encuentra un numero
-                        const nameParts = item.name.split(" ");
-                        displayTag = nameParts[0] + " " + (nameParts[1] || "");
-                        if (displayTag.toLowerCase().includes("sin stock")) {
-                            displayTag = "Menu";
-                        }
-                    } else {
-                        displayTag = "Menu";
-                    }
-                }
+                // Popularidad de menus: usar el nombre del plato
+                let displayTag = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "").trim() : "Plato Desconocido";
+                totalViandasToCook += item.quantity;
 
                 if (!menuBreakdown[displayTag]) {
                     menuBreakdown[displayTag] = 0;
@@ -1200,6 +1211,9 @@ class NutriRootsApp {
         totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
         totalOrdersSpan.innerText = totalOrdersCount;
         pendingSpan.innerText = pendingCount;
+        
+        const totalViandasSpan = document.getElementById("stat-total-viandas-count");
+        if (totalViandasSpan) totalViandasSpan.innerText = totalViandasToCook;
         
         if (viandasSpan) {
             if (Object.keys(viandasBreakdown).length > 0) {
@@ -1703,6 +1717,7 @@ class NutriRootsApp {
                 document.getElementById("menu-price").value = item.price;
                 document.getElementById("menu-tag").value = item.tag || "";
                 document.getElementById("menu-image").value = item.image || "";
+                document.getElementById("menu-stock").value = item.stock ?? "";
                 document.getElementById("menu-available").checked = item.available;
                 
                 document.getElementById("menu-kcal").value = item.macros?.kcal || "";
@@ -1715,6 +1730,7 @@ class NutriRootsApp {
             title.innerText = "Agregar Nueva Vianda";
             document.getElementById("menu-type-select").value = "particular";
             document.getElementById("menu-available").checked = true;
+            document.getElementById("menu-stock").value = "";
             
             document.getElementById("menu-kcal").value = "";
             document.getElementById("menu-protein").value = "";
@@ -1745,6 +1761,9 @@ class NutriRootsApp {
         const image = document.getElementById("menu-image").value.trim();
         const available = document.getElementById("menu-available").checked;
         
+        const stockStr = document.getElementById("menu-stock").value.trim();
+        const stock = stockStr === "" ? null : parseInt(stockStr, 10);
+        
         const kcal = document.getElementById("menu-kcal").value.trim();
         const protein = document.getElementById("menu-protein").value.trim();
         const carbs = document.getElementById("menu-carbs").value.trim();
@@ -1769,6 +1788,7 @@ class NutriRootsApp {
                     type,
                     tag,
                     image,
+                    stock,
                     available,
                     macros
                 };
@@ -1785,6 +1805,7 @@ class NutriRootsApp {
                 type,
                 tag,
                 image,
+                stock,
                 available,
                 macros
             });

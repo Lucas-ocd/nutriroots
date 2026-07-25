@@ -213,8 +213,9 @@
                             <div class="form-group">
                                 <label for="checkout-time">Franja Horaria *</label>
                                 <select id="checkout-time">
-                                    <option value="Domingo (18:00 a 21:00)">Domingo (18:00 a 21:00)</option>
-                                    <option value="Lunes (09:00 a 12:00)">Lunes (09:00 a 12:00)</option>
+                                    <option value="Domingo por la tarde (18:00 a 21:00 hrs)">Domingo por la tarde (18:00 a 21:00 hrs)</option>
+                                    <option value="Lunes por la mañana (10:00 a 13:00 hrs)">Lunes por la mañana (10:00 a 13:00 hrs)</option>
+                                    <option value="Lunes por la tarde (18:00 a 21:00 hrs)">Lunes por la tarde (18:00 a 21:00 hrs)</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -328,6 +329,13 @@
                                 <div class="stat-info">
                                     <h4>Pendientes / Cocina</h4>
                                     <div class="stat-value" id="stat-pending-count">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #ffedd5; color: #ea580c;">🧑‍🍳</div>
+                                <div class="stat-info">
+                                    <h4>A Cocinar</h4>
+                                    <div class="stat-value" id="stat-total-viandas-count">0</div>
                                 </div>
                             </div>
                             <div class="stat-card">
@@ -534,6 +542,14 @@
                 <div class="form-group">
                     <label for="menu-tag">Etiqueta Especial (Opcional)</label>
                     <input type="text" id="menu-tag" placeholder="Ej. Más Vendido, Picante, Sin TACC">
+                </div>
+                
+                <div class="form-group">
+                    <label for="menu-stock" style="display: flex; justify-content: space-between;">
+                        <span>Stock (Límite de unidades)</span>
+                        <span style="font-weight: normal; color: var(--gray-500); font-size: 0.8rem;">Opcional</span>
+                    </label>
+                    <input type="number" id="menu-stock" placeholder="Ej. 15 (Dejar vacío si no hay límite)" min="0">
                 </div>
                 
                 <div class="form-group">
