@@ -999,7 +999,8 @@ class NutriRootsApp {
 
         // Generar un ID incremental o aleatorio único
         const orderNumber = 1000 + this.orders.length + 1;
-        const orderId = `NR-${orderNumber}`;
+        const uniqueSuffix = Math.floor(Math.random() * 9000) + 1000;
+        const orderId = `NR-${orderNumber}-${uniqueSuffix}`;
 
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const shipping = this.getShippingCost();
