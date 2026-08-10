@@ -1244,8 +1244,6 @@ class NutriRootsApp {
         const viandasSpan = document.getElementById("stat-viandas-count");
         const menuBreakdownContainer = document.getElementById("stat-menu-breakdown");
         
-        if (!totalRevenueSpan) return;
-
         // Calcular ganancias solo de pedidos entregados o activos (no cancelados)
         const validOrders = this.orders.filter(order => order.status !== "cancelado");
         let totalRevenue = 0;
@@ -1284,9 +1282,9 @@ class NutriRootsApp {
         // Pedidos que requieren acción (pendiente o en cocina)
         const pendingCount = this.orders.filter(order => order.status === "pendiente" || order.status === "en_cocina").length;
 
-        totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
-        totalOrdersSpan.innerText = totalOrdersCount;
-        pendingSpan.innerText = pendingCount;
+        if (totalRevenueSpan) totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
+        if (totalOrdersSpan) totalOrdersSpan.innerText = totalOrdersCount;
+        if (pendingSpan) pendingSpan.innerText = pendingCount;
         
         const totalViandasSpan = document.getElementById("stat-total-viandas-count");
         if (totalViandasSpan) totalViandasSpan.innerText = totalViandasToCook;
