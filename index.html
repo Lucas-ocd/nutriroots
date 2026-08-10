@@ -493,12 +493,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="menu-category">Categoría *</label>
-                        <select id="menu-category" required>
-                            <option value="Clásicos">Clásicos</option>
-                            <option value="Pastas">Pastas</option>
-                            <option value="Saludable">Saludable</option>
-                            <option value="Postres">Postres</option>
-                        </select>
+                        <input type="text" id="menu-category" list="categories-datalist" required placeholder="Escribe o selecciona..." style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); box-sizing: border-box;">
+                        <datalist id="categories-datalist">
+                            <option value="Clásicos">
+                            <option value="Pastas">
+                            <option value="Saludable">
+                            <option value="Postres">
+                        </datalist>
                     </div>
                     
                     <div class="form-group">

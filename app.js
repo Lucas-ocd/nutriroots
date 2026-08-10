@@ -1800,6 +1800,15 @@ class NutriRootsApp {
         form.reset();
         document.getElementById("menu-id-field").value = "";
         
+        // Rellenar datalist de categorías de manera dinámica
+        const datalist = document.getElementById("categories-datalist");
+        if (datalist) {
+            const currentCats = new Set(this.menu.map(item => item.category).filter(c => c && c.trim() !== ""));
+            const defaultCats = ["Clásicos", "Pastas", "Saludable", "Postres"];
+            const allCats = new Set([...defaultCats, ...currentCats]);
+            datalist.innerHTML = Array.from(allCats).map(cat => `<option value="${cat}"></option>`).join("");
+        }
+        
         if (itemId) {
             // Modo Edición
             const item = this.menu.find(i => i.id === itemId);
