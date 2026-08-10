@@ -41,29 +41,7 @@ class NutriRootsApp {
 
     async init() {
         this.activeCompany = "nutriroots";
-        await this.loadData();
 
-        // Verificar sesión de administración guardada
-        const savedSession = sessionStorage.getItem("nr_admin_session");
-        if (savedSession) {
-            this.adminSession = savedSession;
-            this.selectCompany("nutriroots", false);
-            this.showView("admin");
-            return;
-        }
-
-        // Verificar si ingresa con (?admin) directo, abrir login
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has("admin")) {
-            this.updateNavVisibility("login");
-            this.showView("login");
-            return;
-        }
-
-        // Por defecto mostrar el landing page para elegir tipo de cliente
-        this.selectCompany("nutriroots", false);
-        this.showView("landing");
-        
         // Establecer fecha mínima en el formulario (hoy)
         const dateInput = document.getElementById("checkout-date");
         if (dateInput) {
@@ -71,13 +49,62 @@ class NutriRootsApp {
             dateInput.min = today;
             dateInput.value = today;
         }
+
+        // Escuchar el estado de autenticación de Firebase
+        if (typeof firebase !== 'undefined') {
+            let initialAuthResolved = false;
+            
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    if (user.email) {
+                        // El usuario es Admin
+                        const username = user.email.split('@')[0];
+                        this.adminSession = username;
+                        sessionStorage.setItem("nr_admin_session", username);
+                        
+                        await this.loadData();
+                        await this.loadOrders();
+                        
+                        this.selectCompany("nutriroots", false);
+                        this.showView("admin");
+                    } else {
+                        // El usuario es un cliente anónimo
+                        this.adminSession = null;
+                        
+                        await this.loadData();
+                        
+                        if (!initialAuthResolved) {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const savedSession = sessionStorage.getItem("nr_admin_session");
+                            
+                            if (urlParams.has("admin") || savedSession) {
+                                // Si se solicitó admin o había una sesión expirada, mostrar login
+                                this.updateNavVisibility("login");
+                                this.showView("login");
+                            } else {
+                                this.selectCompany("nutriroots", false);
+                                this.showView("landing");
+                            }
+                        }
+                    }
+                } else {
+                    // No hay sesión, iniciar anónimamente
+                    firebase.auth().signInAnonymously().catch(console.error);
+                }
+                initialAuthResolved = true;
+            });
+        } else {
+            // Fallback sin Firebase
+            await this.loadData();
+            this.selectCompany("nutriroots", false);
+            this.showView("landing");
+        }
     }
 
     // --- MANEJO DE PERSISTENCIA ---
     async loadData() {
         try {
             const menuDoc = await db.collection("nutriroots_data").doc("menu").get();
-            const ordersDoc = await db.collection("nutriroots_data").doc("orders").get();
             const companiesDoc = await db.collection("nutriroots_data").doc("companies").get();
 
             if (menuDoc.exists) {
@@ -96,17 +123,11 @@ class NutriRootsApp {
                 this.saveMenuToLocalStorage();
             }
 
-            // Nueva colección para documentos individuales
-            const ordersSnapshot = await db.collection("orders").get();
-            
-            if (!ordersSnapshot.empty) {
-                this.orders = ordersSnapshot.docs.map(doc => doc.data());
-                // Ordenar por ID descendente (más nuevos primero)
-                this.orders.sort((a, b) => {
-                    const idA = a.id || "";
-                    const idB = b.id || "";
-                    return idB.localeCompare(idA);
-                });
+            // Las órdenes de Firebase se cargan por separado por seguridad y rendimiento.
+            // Cargamos de LocalStorage como fallback.
+            const localOrders = localStorage.getItem("nr_orders_unified_v2");
+            if (localOrders) {
+                this.orders = JSON.parse(localOrders);
             } else {
                 this.orders = [];
             }
@@ -162,6 +183,27 @@ class NutriRootsApp {
     saveCompaniesToLocalStorage() {
         db.collection("nutriroots_data").doc("companies").set({ data: this.companies }).catch(console.error);
         localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
+    }
+
+    async loadOrders() {
+        if (typeof db === 'undefined') return;
+        try {
+            const ordersSnapshot = await db.collection("orders").get();
+            if (!ordersSnapshot.empty) {
+                this.orders = ordersSnapshot.docs.map(doc => doc.data());
+                // Ordenar por ID descendente (más nuevos primero)
+                this.orders.sort((a, b) => {
+                    const idA = a.id || "";
+                    const idB = b.id || "";
+                    return idB.localeCompare(idA);
+                });
+            } else {
+                this.orders = [];
+            }
+            this.saveOrdersToLocalStorage();
+        } catch (error) {
+            console.error("Error cargando órdenes de Firebase:", error);
+        }
     }
 
     migrateMenuCategories() {
@@ -338,7 +380,7 @@ class NutriRootsApp {
         this.renderMenuGrid();
     }
 
-    handleLoginSubmit(event) {
+    async handleLoginSubmit(event) {
         event.preventDefault();
         const username = document.getElementById("login-username").value.trim().toLowerCase();
         const password = document.getElementById("login-password").value;
@@ -351,20 +393,52 @@ class NutriRootsApp {
         };
 
         if (credentials[username] && credentials[username] === password) {
-            if (errorMsg) errorMsg.style.display = "none";
-            this.adminSession = username;
-            sessionStorage.setItem("nr_admin_session", username);
-            this.selectCompany("nutriroots", false);
-            this.showView("admin");
+            const emailMap = {
+                "admin": "admin@nutriroots.com",
+                "nutriroots": "nutriroots@nutriroots.com",
+                "corporativo": "corporativo@nutriroots.com"
+            };
+            const email = emailMap[username] || `${username}@nutriroots.com`;
+
+            try {
+                if (typeof firebase !== 'undefined') {
+                    await firebase.auth().signInWithEmailAndPassword(email, password);
+                } else {
+                    // Fallback sin Firebase (desarrollo local)
+                    if (errorMsg) errorMsg.style.display = "none";
+                    this.adminSession = username;
+                    sessionStorage.setItem("nr_admin_session", username);
+                    this.selectCompany("nutriroots", false);
+                    this.showView("admin");
+                }
+            } catch (error) {
+                console.error("Error autenticando con Firebase:", error);
+                if (errorMsg) {
+                    errorMsg.textContent = "Error al autenticar: " + error.message;
+                    errorMsg.style.display = "block";
+                }
+            }
         } else {
-            if (errorMsg) errorMsg.style.display = "block";
+            if (errorMsg) {
+                errorMsg.textContent = "Usuario o contraseña incorrectos.";
+                errorMsg.style.display = "block";
+            }
         }
     }
 
-    handleLogout() {
+    async handleLogout() {
         sessionStorage.removeItem("nr_admin_session");
         this.adminSession = null;
         this.activeCompany = "nutriroots";
+        
+        if (typeof firebase !== 'undefined') {
+            try {
+                await firebase.auth().signOut();
+                await firebase.auth().signInAnonymously();
+            } catch (error) {
+                console.error("Error al cerrar sesión o re-iniciar anónimamente:", error);
+            }
+        }
         
         const cartToggle = document.getElementById("btn-cart-toggle");
         if (cartToggle) cartToggle.style.display = "inline-flex";
@@ -997,8 +1071,9 @@ class NutriRootsApp {
         //     }
         // }
 
-        // Generar un ID incremental o aleatorio único
-        const orderNumber = 1000 + this.orders.length + 1;
+        // Generar un ID secuencial basado en tiempo y aleatorio único
+        // Evitamos usar this.orders.length para que funcione sin necesidad de cargar todos los pedidos del servidor en la máquina del cliente.
+        const orderNumber = Math.floor(Date.now() / 1000) % 1000000;
         const uniqueSuffix = Math.floor(Math.random() * 9000) + 1000;
         const orderId = `NR-${orderNumber}-${uniqueSuffix}`;
 
@@ -1216,16 +1291,38 @@ class NutriRootsApp {
         const totalViandasSpan = document.getElementById("stat-total-viandas-count");
         if (totalViandasSpan) totalViandasSpan.innerText = totalViandasToCook;
         
-        if (viandasSpan) {
-            if (Object.keys(viandasBreakdown).length > 0) {
-                const breakdownHtml = Object.keys(viandasBreakdown).map(k => {
-                    return `<div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--gray-200); padding-bottom: 0.15rem; margin-bottom: 0.15rem; font-size: 0.85rem; color: var(--dark-muted);">
-                                <span>${k}</span> <span style="font-weight:700; color:var(--dark);">${viandasBreakdown[k]}</span>
-                            </div>`;
-                }).join('');
-                viandasSpan.innerHTML = `<div style="margin-top: 0.5rem;">${breakdownHtml}</div>`;
-            } else {
-                viandasSpan.innerHTML = "<div style='font-size:0.85rem; color:var(--gray-400); margin-top: 0.5rem;'>Sin datos</div>";
+        const ctx = document.getElementById('stat-viandas-chart');
+        if (ctx) {
+            const labels = Object.keys(viandasBreakdown);
+            const data = Object.values(viandasBreakdown);
+            
+            if (window.viandasChart) {
+                window.viandasChart.destroy();
+            }
+            
+            if (labels.length > 0) {
+                window.viandasChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#ea580c', '#4338ca', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { font: { family: "'Inter', sans-serif" } }
+                            }
+                        }
+                    }
+                });
             }
         }
 
