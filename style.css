@@ -513,7 +513,7 @@ a {
     height: 100vh;
     background-color: rgba(18, 24, 36, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 150;
+    z-index: 1000;
     display: none;
 }
 
@@ -525,7 +525,7 @@ a {
     max-width: 450px;
     height: 100vh;
     background-color: var(--white);
-    z-index: 160;
+    z-index: 1001;
     box-shadow: -10px 0 30px rgba(0,0,0,0.1);
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -1389,8 +1389,8 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 25px rgba(132, 204, 22, 0.4);
-    z-index: 999;
+    box-shadow: 0 10px 25px rgba(255, 94, 54, 0.4);
+    z-index: 900;
     cursor: pointer;
     transition: all 0.3s ease;
     animation: slideUp 0.3s ease forwards;
@@ -1398,8 +1398,8 @@ footer {
 
 .floating-cart-bar:hover {
     transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 12px 30px rgba(132, 204, 22, 0.5);
-    background-color: var(--primary-dark);
+    box-shadow: 0 12px 30px rgba(255, 94, 54, 0.5);
+    background-color: var(--primary-hover);
 }
 
 .floating-cart-info {
@@ -1410,7 +1410,7 @@ footer {
 
 .floating-cart-count {
     background-color: var(--white);
-    color: var(--primary-dark);
+    color: var(--primary);
     font-weight: 800;
     width: 24px;
     height: 24px;
@@ -1435,3 +1435,44 @@ footer {
     from { bottom: -100px; opacity: 0; }
     to { bottom: 20px; opacity: 1; }
 }
+
+/* Espaciado inferior para evitar que la barra flotante tape los últimos elementos */
+.menu-list,
+#view-client {
+    padding-bottom: 90px;
+}
+
+/* Acciones del formulario de Checkout (Responsivo y fácil de pulsar) */
+.checkout-form-actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.checkout-form-actions .btn-secondary {
+    flex: 1;
+    padding: 0.85rem 1rem;
+}
+
+.checkout-form-actions .btn-primary {
+    flex: 1.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+}
+
+@media (max-width: 520px) {
+    .checkout-form-actions {
+        flex-direction: column-reverse;
+        gap: 0.8rem;
+    }
+    .checkout-form-actions .btn-primary,
+    .checkout-form-actions .btn-secondary {
+        width: 100%;
+        flex: none;
+        padding: 0.9rem;
+    }
+}
+

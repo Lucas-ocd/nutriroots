@@ -743,12 +743,14 @@ class NutriRootsApp {
     toggleCart() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
+        const floatingBar = document.getElementById("floating-cart-bar");
         
         if (drawer.classList.contains("open")) {
             this.closeCart();
         } else {
             drawer.classList.add("open");
             overlay.style.display = "block";
+            if (floatingBar) floatingBar.style.display = "none";
             this.renderCartItems();
         }
     }
@@ -761,6 +763,7 @@ class NutriRootsApp {
             drawer.classList.remove("open");
             overlay.style.display = "none";
         }
+        this.updateCartUI();
     }
 
     addToCart(itemId) {
@@ -796,9 +799,11 @@ class NutriRootsApp {
     openCartBriefly() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
+        const floatingBar = document.getElementById("floating-cart-bar");
         if (!drawer.classList.contains("open")) {
             drawer.classList.add("open");
             overlay.style.display = "block";
+            if (floatingBar) floatingBar.style.display = "none";
             this.renderCartItems();
         }
     }
