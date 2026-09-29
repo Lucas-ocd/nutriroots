@@ -2,12 +2,12 @@
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCHxqIi9eNN04OztdWnlZZgTKOhZCcVmmk",
-  authDomain: "nutriroots-f80fc.firebaseapp.com",
-  projectId: "nutriroots-f80fc",
-  storageBucket: "nutriroots-f80fc.firebasestorage.app",
-  messagingSenderId: "30226400776",
-  appId: "1:30226400776:web:1b1dd2255fd012dbcff3bd"
+    apiKey: "AIzaSyCHxqIi9eNN04OztdWnlZZgTKOhZCcVmmk",
+    authDomain: "nutriroots-f80fc.firebaseapp.com",
+    projectId: "nutriroots-f80fc",
+    storageBucket: "nutriroots-f80fc.firebasestorage.app",
+    messagingSenderId: "30226400776",
+    appId: "1:30226400776:web:1b1dd2255fd012dbcff3bd"
 };
 
 // Initialize Firebase
@@ -32,7 +32,7 @@ class NutriRootsApp {
         // Datos de configuración
         this.WHATSAPP_NUMBER = "5491155555555"; // Número de WhatsApp del negocio (formato internacional sin +)
         this.SHIPPING_COST = 4500; // Costo fijo de envío
-        
+
         // Estado de la aplicación
         this.menu = [];
         this.orders = [];
@@ -48,7 +48,7 @@ class NutriRootsApp {
         this.companies = []; // Lista de empresas clientes autorizadas (solo corporativo)
         this.catalogType = "particular"; // Catálogo de viandas activo ('particular' o 'corporativo')
         this.lastOrder = null; // Último pedido registrado para mostrar resumen en pantalla de éxito
-        
+
         // Inicializar
         document.addEventListener("DOMContentLoaded", () => this.init());
     }
@@ -87,7 +87,7 @@ class NutriRootsApp {
         // Por defecto mostrar el landing page para elegir tipo de cliente
         this.selectCompany("nutriroots", false);
         this.showView("landing");
-        
+
         // Establecer fecha mínima en el formulario (hoy)
         const dateInput = document.getElementById("checkout-date");
         if (dateInput) {
@@ -122,7 +122,7 @@ class NutriRootsApp {
 
             // Nueva colección para documentos individuales
             const ordersSnapshot = await db.collection("orders").get();
-            
+
             if (!ordersSnapshot.empty) {
                 this.orders = ordersSnapshot.docs.map(doc => doc.data());
                 // Ordenar por ID descendente (más nuevos primero)
@@ -152,23 +152,59 @@ class NutriRootsApp {
                 }
                 this.saveCompaniesToLocalStorage();
             }
-            
+
             console.log("Datos cargados correctamente desde Firebase.");
         } catch (error) {
-            console.error("Error cargando Firebase, usando LocalStorage:", error);
-            // Fallback
+            console.error("Error cargando Firebase, usando LocalStorage o menú por defecto:", error);
+            // Fallback: intentar recuperar desde LocalStorage
             const localMenu = localStorage.getItem("nr_menu_unified_v2");
             if (localMenu) {
-                this.menu = JSON.parse(localMenu);
-                this.migrateMenuCategories();
+                try {
+                    this.menu = JSON.parse(localMenu);
+                    this.migrateMenuCategories();
+                } catch (e) {
+                    console.error("Error parseando menú local:", e);
+                }
             }
             const localOrders = localStorage.getItem("nr_orders_unified_v2");
-            if (localOrders) this.orders = JSON.parse(localOrders);
+            if (localOrders) {
+                try {
+                    this.orders = JSON.parse(localOrders);
+                } catch (e) {
+                    console.error("Error parseando pedidos locales:", e);
+                }
+            }
             const localCompanies = localStorage.getItem("nr_companies_unified_v2");
             if (localCompanies) {
-                const parsed = JSON.parse(localCompanies);
-                this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+                try {
+                    const parsed = JSON.parse(localCompanies);
+                    this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+                } catch (e) {
+                    console.error("Error parseando empresas locales:", e);
+                }
             }
+        }
+
+        // GARANTÍA DE DISPONIBILIDAD: Si por error de Firebase o navegador nuevo la lista quedó vacía,
+        // restauramos automáticamente las viandas definidas en data.js para que la web nunca quede en blanco.
+        if (!this.menu || this.menu.length === 0) {
+            const retail = (typeof INITIAL_MENU_RETAIL !== 'undefined' ? INITIAL_MENU_RETAIL : []).map(item => ({ ...item, type: "particular" }));
+            const corp = (typeof INITIAL_MENU_CORP !== 'undefined' ? INITIAL_MENU_CORP : []).map(item => ({ ...item, type: "corporativo" }));
+            this.menu = [...retail, ...corp];
+            try {
+                localStorage.setItem("nr_menu_unified_v2", JSON.stringify(this.menu));
+            } catch (e) {}
+        }
+
+        if (!this.companies || this.companies.length === 0) {
+            this.companies = [
+                { name: "TechCorp", password: "corp123" },
+                { name: "Estudio Contable", password: "corp123" },
+                { name: "Banco Galicia", password: "corp123" }
+            ];
+            try {
+                localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
+            } catch (e) {}
         }
     }
 
@@ -196,7 +232,15 @@ class NutriRootsApp {
         this.menu = this.menu.map(item => {
             if (!item.category || item.category.trim() === "") {
                 changed = true;
-                return { ...item, category: defaultMap.get(item.id) || "Clásicos" };
+                return { ...item, category: defaultMap.get(item.id) || "Clásicas" };
+            }
+            if (item.category === "Tartas y Pasteles") {
+                changed = true;
+                return { ...item, category: "Tartas" };
+            }
+            if (item.category === "Clásicos") {
+                changed = true;
+                return { ...item, category: "Clásicas" };
             }
             return item;
         });
@@ -238,7 +282,7 @@ class NutriRootsApp {
         this.clientCompany = null;
         sessionStorage.removeItem("nr_client_company");
         document.body.className = "";
-        
+
         const cartToggle = document.getElementById("btn-cart-toggle");
         if (cartToggle) cartToggle.style.display = "none";
 
@@ -270,7 +314,7 @@ class NutriRootsApp {
         this.activeCompany = "nutriroots";
         document.body.className = "theme-nutriroots";
         this.WHATSAPP_NUMBER = "5491155555555";
-        
+
         // Datos ya cargados en init()
 
         const cartToggle = document.getElementById("btn-cart-toggle");
@@ -291,7 +335,7 @@ class NutriRootsApp {
         this.updateCartUI();
 
         this.setCatalogType(this.catalogType);
-        
+
         if (redirectToClient) {
             this.showView("client");
         }
@@ -299,13 +343,13 @@ class NutriRootsApp {
 
     setCatalogType(type) {
         this.catalogType = type;
-        
+
         const btnPart = document.getElementById("btn-catalog-particular");
         const btnCorp = document.getElementById("btn-catalog-corporativo");
         const brandNameContainer = document.getElementById("brand-name-container");
         const heroTitle = document.getElementById("client-hero-title");
         const heroDesc = document.getElementById("client-hero-desc");
-        
+
         if (type === "particular") {
             document.body.className = "theme-nutriroots";
             if (btnPart) {
@@ -353,10 +397,10 @@ class NutriRootsApp {
                 heroDesc.innerText = "Cocinamos platos de categoría premium para equipos de trabajo y empresas. Almuerzos nutritivos entregados directamente en tu oficina.";
             }
         }
-        
+
         this.cart = [];
         this.updateCartUI();
-        
+
         this.selectedCategory = "Todas";
         this.renderCategoryChips();
         this.renderMenuGrid();
@@ -389,7 +433,7 @@ class NutriRootsApp {
         sessionStorage.removeItem("nr_admin_session");
         this.adminSession = null;
         this.activeCompany = "nutriroots";
-        
+
         const cartToggle = document.getElementById("btn-cart-toggle");
         if (cartToggle) cartToggle.style.display = "inline-flex";
 
@@ -432,28 +476,28 @@ class NutriRootsApp {
     // --- CONTROL DE VISTAS (SPA) ---
     showView(viewName) {
         this.currentView = viewName;
-        
+
         // Ocultar todas las secciones
         document.querySelectorAll(".view-section").forEach(section => {
             section.style.display = "none";
         });
-        
+
         // Quitar active de nav links
         document.getElementById("nav-client-link").classList.remove("active");
         document.getElementById("nav-admin-link").classList.remove("active");
-        
+
         // Mostrar vista activa
         const activeSection = document.getElementById(`view-${viewName}`);
         if (activeSection) {
             if (viewName === "admin") {
                 activeSection.style.display = "grid"; // Admin usa grid
                 document.getElementById("nav-admin-link").classList.add("active");
-                
+
                 const sideCompaniesBtn = document.getElementById("side-companies-btn");
                 if (sideCompaniesBtn) {
                     sideCompaniesBtn.style.display = "block";
                 }
-                
+
                 this.switchAdminTab(this.currentAdminTab);
                 this.updateAdminStats();
                 this.renderOrdersTable();
@@ -466,20 +510,20 @@ class NutriRootsApp {
                 if (viewName === "corporate-login") {
                     const corpCompanySelect = document.getElementById("corporate-company-select");
                     if (corpCompanySelect) {
-                        corpCompanySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' + 
+                        corpCompanySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' +
                             this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
                     }
                 }
                 if (viewName === "checkout") {
                     const companySelect = document.getElementById("checkout-company-select");
                     if (companySelect) {
-                        companySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' + 
+                        companySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' +
                             this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
                     }
                     if (this.catalogType === "corporativo" && this.clientCompany) {
                         companySelect.value = this.clientCompany;
                     }
-                    
+
                     const typeSelect = document.getElementById("checkout-type");
                     if (typeSelect) {
                         typeSelect.value = this.catalogType;
@@ -493,13 +537,13 @@ class NutriRootsApp {
                 }
             }
         }
-        
+
         // Cerrar carrito por si está abierto
         this.closeCart();
-        
+
         // Actualizar UI del carrito (mostrar/ocultar barra flotante)
         this.updateCartUI();
-        
+
         // Scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -520,7 +564,7 @@ class NutriRootsApp {
     renderCategoryChips() {
         const container = document.getElementById("categories-list");
         if (!container) return;
-        
+
         const categories = this.getCategories();
         container.innerHTML = categories.map(cat => `
             <button class="category-chip ${cat === this.selectedCategory ? 'active' : ''}" 
@@ -532,23 +576,23 @@ class NutriRootsApp {
 
     selectCategory(category, element) {
         this.selectedCategory = category;
-        
+
         // Actualizar chips activos
         document.querySelectorAll(".category-chip").forEach(chip => {
             chip.classList.remove("active");
         });
         element.classList.add("active");
-        
+
         this.renderMenuGrid();
     }
 
     setMenuLayout(layoutType) {
         this.menuLayout = layoutType;
-        
+
         const container = document.getElementById("menu-container");
         const btnList = document.getElementById("btn-layout-list");
         const btnGrid = document.getElementById("btn-layout-grid");
-        
+
         if (container) {
             if (layoutType === 'list') {
                 container.className = 'menu-list';
@@ -560,14 +604,14 @@ class NutriRootsApp {
                 if (btnGrid) btnGrid.classList.add('active');
             }
         }
-        
+
         this.renderMenuGrid();
     }
 
     renderMenuGrid() {
         const container = document.getElementById("menu-container");
         if (!container) return;
-        
+
         let filteredMenu = this.menu.filter(item => {
             if (this.catalogType === "particular") {
                 return item.type === "particular" || item.type === "ambos" || !item.type;
@@ -575,11 +619,11 @@ class NutriRootsApp {
                 return item.type === "corporativo" || item.type === "ambos";
             }
         });
-        
+
         if (this.selectedCategory !== "Todas") {
             filteredMenu = filteredMenu.filter(item => item.category === this.selectedCategory);
         }
-            
+
         if (filteredMenu.length === 0) {
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--dark-muted)">No hay platos disponibles en esta categoría.</div>`;
             return;
@@ -588,12 +632,12 @@ class NutriRootsApp {
         if (this.menuLayout === 'list') {
             container.innerHTML = filteredMenu.map(item => {
                 const isAvailable = item.available !== false && (item.stock == null || item.stock > 0);
-                const imageUrl = item.image && item.image.trim() !== "" 
-                    ? item.image 
+                const imageUrl = item.image && item.image.trim() !== ""
+                    ? item.image
                     : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
 
                 const cartItem = this.cart.find(c => c.id === item.id);
-                const qtyHtml = cartItem 
+                const qtyHtml = cartItem
                     ? `
                         <div class="list-qty-selector">
                             <button class="list-qty-btn" onclick="app.updateCartQuantity('${item.id}', -1)">-</button>
@@ -610,12 +654,12 @@ class NutriRootsApp {
                 // Formatear tag y nombre dinámicamente
                 const displayTag = item.tag ? item.tag.replace(/Opción/gi, "Menú") : "Menú";
                 const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
-                
+
                 const dayClass = item.tag ? item.tag.toLowerCase().replace("ó", "o").replace(" ", "-").replace("opcion", "menu") : 'menu-1';
-                const priceHtml = this.catalogType === 'corporativo' 
+                const priceHtml = this.catalogType === 'corporativo'
                     ? '<div class="menu-list-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
                     : `<div class="menu-list-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
-                
+
                 const macrosHtml = item.macros ? `
                     <div class="macro-text-row" style="font-size: 0.8rem; color: var(--gray-600); margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         ${item.macros.kcal ? `<span><strong>Kcal:</strong> ${item.macros.kcal}</span>` : ''}
@@ -646,15 +690,15 @@ class NutriRootsApp {
             container.innerHTML = filteredMenu.map(item => {
                 const hasTag = item.tag && item.tag.trim() !== "";
                 const isAvailable = item.available !== false && (item.stock == null || item.stock > 0);
-                const imageUrl = item.image && item.image.trim() !== "" 
-                    ? item.image 
+                const imageUrl = item.image && item.image.trim() !== ""
+                    ? item.image
                     : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
 
                 // Formatear tag y nombre dinámicamente
                 const displayTag = item.tag ? item.tag.replace(/Opción/gi, "Menú") : "";
                 const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
 
-                const priceHtml = this.catalogType === 'corporativo' 
+                const priceHtml = this.catalogType === 'corporativo'
                     ? '<div class="menu-card-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido en Plan</div>'
                     : `<div class="menu-card-price">$${item.price.toLocaleString("es-AR")} <span>c/u</span></div>`;
 
@@ -698,7 +742,7 @@ class NutriRootsApp {
     toggleCart() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
-        
+
         if (drawer.classList.contains("open")) {
             this.closeCart();
         } else {
@@ -711,7 +755,7 @@ class NutriRootsApp {
     closeCart() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
-        
+
         if (drawer && overlay) {
             drawer.classList.remove("open");
             overlay.style.display = "none";
@@ -784,11 +828,11 @@ class NutriRootsApp {
         const countBadge = document.getElementById("cart-count");
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
+
         if (countBadge) {
             countBadge.innerText = totalItems;
         }
-        
+
         // Actualizar botón de checkout del carrito
         const btnCheckout = document.getElementById("btn-cart-checkout");
         if (btnCheckout) {
@@ -799,14 +843,14 @@ class NutriRootsApp {
         const floatingBar = document.getElementById("floating-cart-bar");
         const floatingCount = document.getElementById("floating-cart-count");
         const floatingTotal = document.getElementById("floating-cart-total");
-        
+
         if (floatingBar) {
             if (totalItems > 0 && this.currentView === "client") {
                 floatingBar.style.display = "flex";
                 if (floatingCount) floatingCount.innerText = totalItems;
                 if (floatingTotal) {
-                    floatingTotal.innerText = this.catalogType === 'corporativo' 
-                        ? '$0' 
+                    floatingTotal.innerText = this.catalogType === 'corporativo'
+                        ? '$0'
                         : `$${subtotal.toLocaleString("es-AR")}`;
                 }
             } else {
@@ -830,7 +874,7 @@ class NutriRootsApp {
         const totalSpan = document.getElementById("cart-total");
         const shippingSpan = document.getElementById("cart-shipping");
         const promoDiv = document.getElementById("cart-shipping-promo");
-        
+
         if (!container) return;
 
         const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -851,8 +895,8 @@ class NutriRootsApp {
         }
 
         container.innerHTML = this.cart.map(item => {
-            const imageUrl = item.image && item.image.trim() !== "" 
-                ? item.image 
+            const imageUrl = item.image && item.image.trim() !== ""
+                ? item.image
                 : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
             const priceHtml = this.catalogType === 'corporativo'
                 ? `<div class="cart-item-price" style="color: var(--dark-muted); font-size: 0.85rem;">Incluido</div>`
@@ -885,8 +929,8 @@ class NutriRootsApp {
         } else {
             subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
             if (shippingSpan) {
-                shippingSpan.innerHTML = shipping === 0 
-                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                shippingSpan.innerHTML = shipping === 0
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>`
                     : `$${shipping.toLocaleString("es-AR")}`;
             }
             totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
@@ -921,9 +965,9 @@ class NutriRootsApp {
     handleCheckoutTypeChange() {
         const typeSelect = document.getElementById("checkout-type");
         if (!typeSelect) return;
-        
+
         const isParticular = typeSelect.value === "particular";
-        
+
         // Toggles particular fields
         const partFields = document.getElementById("checkout-particular-fields");
         if (partFields) {
@@ -937,7 +981,7 @@ class NutriRootsApp {
                 }
             });
         }
-        
+
         // Ocultar siempre el grupo de empresa porque ya se preseleccionó en el login
         const corpFields = document.getElementById("checkout-company-group");
         const companySelect = document.getElementById("checkout-company-select");
@@ -947,7 +991,7 @@ class NutriRootsApp {
                 companySelect.removeAttribute("required");
             }
         }
-        
+
         // Actualizar costos de envío en el resumen
         this.renderCheckoutSummary();
     }
@@ -957,7 +1001,7 @@ class NutriRootsApp {
         const subtotalSpan = document.getElementById("checkout-subtotal");
         const shippingSpan = document.getElementById("checkout-shipping");
         const totalSpan = document.getElementById("checkout-total");
-        
+
         if (!container) return;
 
         container.innerHTML = this.cart.map(item => {
@@ -983,8 +1027,8 @@ class NutriRootsApp {
         } else {
             subtotalSpan.innerText = `$${subtotal.toLocaleString("es-AR")}`;
             if (shippingSpan) {
-                shippingSpan.innerHTML = shipping === 0 
-                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                shippingSpan.innerHTML = shipping === 0
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>`
                     : `$${shipping.toLocaleString("es-AR")}`;
             }
             totalSpan.innerText = `$${grandTotal.toLocaleString("es-AR")}`;
@@ -993,7 +1037,7 @@ class NutriRootsApp {
 
     handleCheckoutSubmit(event) {
         event.preventDefault();
-        
+
         if (this.cart.length === 0) {
             alert("Tu carrito está vacío. Vuelve a seleccionar platos.");
             this.showView("client");
@@ -1005,10 +1049,10 @@ class NutriRootsApp {
         const name = document.getElementById("checkout-name").value.trim();
         const companyName = !isParticular ? document.getElementById("checkout-company-select").value : "";
         const notes = document.getElementById("checkout-notes").value.trim();
-        
+
         // Datos obligatorios para todos
         const phone = document.getElementById("checkout-phone").value.trim();
-        
+
         // Datos condicionales de entrega/pago para particulares
         const address = isParticular ? document.getElementById("checkout-address").value.trim() : "";
         const deliveryDate = isParticular ? document.getElementById("checkout-date").value : "";
@@ -1067,7 +1111,7 @@ class NutriRootsApp {
             db.collection("orders").doc(newOrder.id).set(newOrder).catch(console.error);
         }
         this.saveOrdersToLocalStorage();
-        
+
         // Descontar stock de los items comprados
         let menuUpdated = false;
         this.cart.forEach(cartItem => {
@@ -1078,7 +1122,7 @@ class NutriRootsApp {
                 menuUpdated = true;
             }
         });
-        
+
         if (menuUpdated) {
             this.saveMenuToLocalStorage();
             this.renderMenuGrid();
@@ -1148,8 +1192,8 @@ class NutriRootsApp {
             if (subtotalEl) subtotalEl.innerText = `$${(order.subtotal || 0).toLocaleString("es-AR")}`;
             if (shippingEl) {
                 const shippingVal = order.shipping || 0;
-                shippingEl.innerHTML = shippingVal === 0 
-                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                shippingEl.innerHTML = shippingVal === 0
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>`
                     : `$${shippingVal.toLocaleString("es-AR")}`;
             }
             if (totalEl) totalEl.innerText = `$${(order.total || 0).toLocaleString("es-AR")}`;
@@ -1237,7 +1281,7 @@ class NutriRootsApp {
 
     generateWhatsAppLink(order) {
         const baseUrl = "https://api.whatsapp.com/send";
-        
+
         let message = `*¡Hola! Realicé un pedido en NutriRoots (Código: ${order.id})* 🌱\n\n`;
         message += `*Cliente:* ${order.customerName}\n`;
         if (order.companyName) {
@@ -1250,7 +1294,7 @@ class NutriRootsApp {
             message += `*Dirección:* ${order.address}\n`;
         }
         if (order.deliveryDate) {
-            const dateFormatted = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+            const dateFormatted = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             message += `*Día de Entrega:* ${dateFormatted}\n`;
         }
         if (order.deliveryTime) {
@@ -1263,7 +1307,7 @@ class NutriRootsApp {
             message += `*Notas/Aclaraciones:* _${order.notes}_\n`;
         }
         message += `\n*--- DETALLE DEL PEDIDO ---*\n`;
-        
+
         order.items.forEach(item => {
             if (this.catalogType === 'corporativo') {
                 message += `• ${item.quantity}x ${item.name}\n`;
@@ -1271,7 +1315,7 @@ class NutriRootsApp {
                 message += `• ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toLocaleString("es-AR")})\n`;
             }
         });
-        
+
         if (this.catalogType !== 'corporativo') {
             message += `\n*Envío:* ${order.shipping === 0 ? 'Gratis' : `$${order.shipping.toLocaleString("es-AR")}`}\n`;
             message += `*TOTAL A PAGAR: $${order.total.toLocaleString("es-AR")}*\n\n`;
@@ -1287,19 +1331,19 @@ class NutriRootsApp {
     // --- LÓGICA DE ADMINISTRACIÓN ---
     switchAdminTab(tabName) {
         this.currentAdminTab = tabName;
-        
+
         // Quitar clase active
         document.getElementById("side-orders-btn").classList.remove("active");
         document.getElementById("side-menu-btn").classList.remove("active");
         const sideCompaniesBtn = document.getElementById("side-companies-btn");
         if (sideCompaniesBtn) sideCompaniesBtn.classList.remove("active");
-        
+
         // Ocultar tabs
         document.getElementById("admin-tab-orders").style.display = "none";
         document.getElementById("admin-tab-menu").style.display = "none";
         const tabCompanies = document.getElementById("admin-tab-companies");
         if (tabCompanies) tabCompanies.style.display = "none";
-        
+
         // Mostrar tab activo y destacar en sidebar
         if (tabName === "orders") {
             document.getElementById("side-orders-btn").classList.add("active");
@@ -1331,7 +1375,7 @@ class NutriRootsApp {
         const pendingSpan = document.getElementById("stat-pending-count");
         const viandasSpan = document.getElementById("stat-viandas-count");
         const menuBreakdownContainer = document.getElementById("stat-menu-breakdown");
-        
+
         if (!totalRevenueSpan) return;
 
         // Calcular ganancias solo de pedidos entregados o activos (no cancelados)
@@ -1344,7 +1388,7 @@ class NutriRootsApp {
         validOrders.forEach(order => {
             let orderTotal = 0;
             const type = order.companyName ? order.companyName.trim() : "Particular";
-            
+
             if (!viandasBreakdown[type]) {
                 viandasBreakdown[type] = 0;
             }
@@ -1353,7 +1397,7 @@ class NutriRootsApp {
                 const cPrice = this.getCustomViandaPrice(order.companyName, item.price);
                 orderTotal += cPrice * item.quantity;
                 viandasBreakdown[type] += item.quantity;
-                
+
                 // Popularidad de menus: usar el nombre del plato
                 let displayTag = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "").trim() : "Plato Desconocido";
                 totalViandasToCook += item.quantity;
@@ -1368,17 +1412,17 @@ class NutriRootsApp {
         });
 
         const totalOrdersCount = this.orders.length;
-        
+
         // Pedidos que requieren acción (pendiente o en cocina)
         const pendingCount = this.orders.filter(order => order.status === "pendiente" || order.status === "en_cocina").length;
 
         totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
         totalOrdersSpan.innerText = totalOrdersCount;
         pendingSpan.innerText = pendingCount;
-        
+
         const totalViandasSpan = document.getElementById("stat-total-viandas-count");
         if (totalViandasSpan) totalViandasSpan.innerText = totalViandasToCook;
-        
+
         if (viandasSpan) {
             if (Object.keys(viandasBreakdown).length > 0) {
                 const breakdownHtml = Object.keys(viandasBreakdown).map(k => {
@@ -1400,9 +1444,9 @@ class NutriRootsApp {
                     const numB = parseInt(b.replace(/\D/g, "")) || 0;
                     return numA - numB;
                 });
-                
+
                 const maxQty = Math.max(...Object.values(menuBreakdown));
-                
+
                 const breakdownHtml = sortedMenus.map(menuTag => {
                     const qty = menuBreakdown[menuTag];
                     const percentage = Math.max(5, (qty / maxQty) * 100);
@@ -1418,7 +1462,7 @@ class NutriRootsApp {
                         </div>
                     `;
                 }).join("");
-                
+
                 menuBreakdownContainer.innerHTML = breakdownHtml;
             } else {
                 menuBreakdownContainer.innerHTML = "<div style='color: var(--gray-400); font-size: 0.9rem;'>No hay ventas registradas.</div>";
@@ -1428,13 +1472,13 @@ class NutriRootsApp {
 
     filterOrders(status, buttonElement) {
         this.currentOrderFilter = status;
-        
+
         // Cambiar botón activo en el filtro
         buttonElement.parentElement.querySelectorAll(".filter-btn").forEach(btn => {
             btn.classList.remove("active");
         });
         buttonElement.classList.add("active");
-        
+
         this.renderOrdersTable();
     }
 
@@ -1442,10 +1486,10 @@ class NutriRootsApp {
         const tbody = document.getElementById("orders-table-body");
         if (!tbody) return;
 
-        const filteredOrders = this.currentOrderFilter === "all" 
-            ? this.orders 
+        const filteredOrders = this.currentOrderFilter === "all"
+            ? this.orders
             : this.orders.filter(order => order.status === this.currentOrderFilter);
-            
+
         // Ordenar por fecha de creación descendente (más recientes primero)
         filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -1462,7 +1506,7 @@ class NutriRootsApp {
                 const rawName = item.name || "";
                 const displayName = rawName.replace(/Menú Ejecutivo:\s*/gi, "");
                 const itemDescription = item.description || (menuItem ? menuItem.description : "");
-                
+
                 return `
                     <div style="border-bottom: 1px dashed var(--gray-200); padding: 0.35rem 0; font-size: 0.85rem; line-height: 1.3;">
                         <div style="display: flex; justify-content: space-between; gap: 1.5rem; align-items: baseline;">
@@ -1493,9 +1537,9 @@ class NutriRootsApp {
                         <div style="font-weight: 600; font-size: 0.95rem;">${order.customerName}</div>
                     </td>
                     <td>
-                        ${order.companyName 
-                            ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center;">${APP_ICONS.company} ${order.companyName}</span>` 
-                            : `<span style="font-size: 0.8rem; color: var(--gray-500); display: flex; align-items: center; font-style: italic;">${APP_ICONS.user} Cliente Particular</span>`}
+                        ${order.companyName
+                    ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center;">${APP_ICONS.company} ${order.companyName}</span>`
+                    : `<span style="font-size: 0.8rem; color: var(--gray-500); display: flex; align-items: center; font-style: italic;">${APP_ICONS.user} Cliente Particular</span>`}
                     </td>
                     <td style="font-size: 0.85rem; line-height: 1.3; vertical-align: top;">${itemsSummary}</td>
                     <td style="font-size: 0.85rem; line-height: 1.3; max-width: 200px; word-break: break-word;" title="${order.notes || ''}">
@@ -1533,8 +1577,8 @@ class NutriRootsApp {
     }
 
     exportOrdersToCSV() {
-        const filteredOrders = this.currentOrderFilter === "all" 
-            ? this.orders 
+        const filteredOrders = this.currentOrderFilter === "all"
+            ? this.orders
             : this.orders.filter(order => order.status === this.currentOrderFilter);
 
         if (filteredOrders.length === 0) {
@@ -1544,7 +1588,7 @@ class NutriRootsApp {
 
         // CSV Header
         const headers = ["0", "#", "Nro de Pedido", "MENU", "Descripcion del menu", "CLIENTE", "Whastapp", "nombre y apellido", "Precio", "fecha de pedido", "Nota adicional", "ORDEN", "Localidad", "Direccion de enrtrega"];
-        
+
         // CSV Rows
         const rows = [];
         let orderIndexCounter = 1;
@@ -1555,17 +1599,17 @@ class NutriRootsApp {
             const dateObj = new Date(order.createdAt);
             const dateStr = `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear().toString().slice(-2)}`;
             const nroPedido = orderIndexCounter++;
-            
+
             // Iterar cada ítem del pedido
             order.items.forEach(item => {
                 const menuItem = this.menu.find(m => m.id === item.id);
                 const rawTag = item.tag || (menuItem ? menuItem.tag : "");
                 let displayTag = rawTag ? rawTag.replace(/Opción/gi, "Menu") : "Menu";
                 displayTag = displayTag.replace(/Menú/gi, "Menu");
-                
+
                 const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "").trim() : "";
                 const orderNum = displayTag.replace(/\D/g, "");
-                
+
                 // Generar una fila por cada unidad (ej. si pide 2 del mismo plato, genera 2 filas)
                 for (let i = 0; i < item.quantity; i++) {
                     const row = [
@@ -1584,7 +1628,7 @@ class NutriRootsApp {
                         order.companyName || "", // Usamos Empresa como localidad si existe
                         order.address || ""
                     ];
-                    
+
                     const formattedRow = row.map(val => {
                         let cell = val === null || val === undefined ? '' : String(val);
                         cell = cell.replace(/"/g, '""');
@@ -1594,7 +1638,7 @@ class NutriRootsApp {
                         }
                         return cell;
                     });
-                    
+
                     rows.push(formattedRow);
                 }
             });
@@ -1619,7 +1663,7 @@ class NutriRootsApp {
             alert("Este pedido no tiene un número de teléfono registrado.");
             return;
         }
-        
+
         let message = `*¡Hola ${order.customerName}!* Recibimos tu pedido (Código: ${order.id}) en nuestro Portal de Viandas. 🥕\n\n`;
         message += `*Detalle de tu Pedido:*\n`;
         order.items.forEach(item => {
@@ -1629,7 +1673,7 @@ class NutriRootsApp {
             const displayName = item.name ? item.name.replace(/Menú Ejecutivo:\s*/gi, "") : "";
             message += `• ${item.quantity}x ${displayTag}: ${displayName}\n`;
         });
-        
+
         if (!order.companyName) {
             message += `\n*Total a abonar:* $${order.total.toLocaleString("es-AR")}\n`;
         } else {
@@ -1637,19 +1681,19 @@ class NutriRootsApp {
         }
 
         if (order.deliveryDate) {
-            const dateFormatted = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {weekday: 'long', day: 'numeric', month: 'long'});
+            const dateFormatted = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", { weekday: 'long', day: 'numeric', month: 'long' });
             message += `*Día de Entrega:* ${dateFormatted} (${order.deliveryTime})\n`;
         }
         if (order.address) {
             message += `*Dirección de Entrega:* ${order.address}\n`;
         }
-        
+
         if (!order.companyName && order.paymentMethod) {
             message += `*Método de Pago:* ${order.paymentMethod}\n\n`;
         } else {
             message += `\n`;
         }
-        
+
         message += `Tu pedido ya se encuentra registrado y en preparación. ¡Muchas gracias por elegirnos!`;
 
         const encodedText = encodeURIComponent(message);
@@ -1674,13 +1718,13 @@ class NutriRootsApp {
         const modal = document.getElementById("order-modal");
         const order = this.orders.find(o => o.id === orderId);
         if (!order || !modal) return;
-        
+
         document.getElementById("order-id-field").value = order.id;
         document.getElementById("order-customerName").value = order.customerName;
         document.getElementById("order-phone").value = order.phone || "";
         document.getElementById("order-status").value = order.status;
         document.getElementById("order-notes").value = order.notes || "";
-        
+
         // Cargar y mostrar/ocultar el campo de empresa
         const companyGroup = document.getElementById("order-companyName-group");
         const companyInput = document.getElementById("order-companyName");
@@ -1700,8 +1744,8 @@ class NutriRootsApp {
             const hasParticularDetails = order.phone || order.address || order.deliveryDate || order.deliveryTime || order.paymentMethod;
             if (hasParticularDetails) {
                 detailsContainer.style.display = "block";
-                const dateFormatted = order.deliveryDate ? new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) : "";
-                
+                const dateFormatted = order.deliveryDate ? new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "";
+
                 detailsContainer.innerHTML = `
                     <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; border-bottom: 1px solid var(--primary-light); padding-bottom: 0.4rem; display: flex; align-items: center;">${APP_ICONS.package} Detalles de Entrega y Pago</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Teléfono:</strong> ${order.phone || 'N/A'}</div>
@@ -1720,10 +1764,10 @@ class NutriRootsApp {
         this.editingOrder = order;
         this.editingOrderItems = (order.items || []).map(item => ({ ...item }));
         this.editingOrderShipping = typeof order.shipping === 'number' ? order.shipping : 0;
-        
+
         this.populateOrderAddDishSelect();
         this.renderOrderItemsEdit();
-        
+
         modal.style.display = "flex";
     }
 
@@ -1843,7 +1887,7 @@ class NutriRootsApp {
 
     handleOrderSubmit(event) {
         event.preventDefault();
-        
+
         const id = document.getElementById("order-id-field").value;
         const name = document.getElementById("order-customerName").value.trim();
         const companyName = this.activeCompany === "corporativo"
@@ -1860,7 +1904,7 @@ class NutriRootsApp {
             order.phone = phone;
             order.status = status;
             order.notes = notes;
-            
+
             // Actualizar lista de platos y recalcular totales
             if (this.editingOrderItems) {
                 order.items = this.editingOrderItems.map(it => ({ ...it }));
@@ -1873,7 +1917,7 @@ class NutriRootsApp {
             if (typeof db !== 'undefined') {
                 db.collection("orders").doc(id).set(order).catch(console.error);
             }
-            
+
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
@@ -1884,12 +1928,12 @@ class NutriRootsApp {
     deleteOrder(orderId) {
         if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el pedido ${orderId}?`)) {
             this.orders = this.orders.filter(o => o.id !== orderId);
-            
+
             // Eliminar individualmente de Firebase
             if (typeof db !== 'undefined') {
                 db.collection("orders").doc(orderId).delete().catch(console.error);
             }
-            
+
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
@@ -1902,8 +1946,8 @@ class NutriRootsApp {
         if (!grid) return;
 
         grid.innerHTML = this.menu.map(item => {
-            const imageUrl = item.image && item.image.trim() !== "" 
-                ? item.image 
+            const imageUrl = item.image && item.image.trim() !== ""
+                ? item.image
                 : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
             return `
                 <div class="menu-editor-card" style="border-left: 4px solid ${item.available ? 'var(--green-success)' : 'var(--gray-300)'}">
@@ -1959,11 +2003,11 @@ class NutriRootsApp {
         const modal = document.getElementById("menu-modal");
         const title = document.getElementById("modal-title-text");
         const form = document.getElementById("menu-form");
-        
+
         // Reset form
         form.reset();
         document.getElementById("menu-id-field").value = "";
-        
+
         if (itemId) {
             // Modo Edición
             const item = this.menu.find(i => i.id === itemId);
@@ -1972,10 +2016,19 @@ class NutriRootsApp {
                 document.getElementById("menu-id-field").value = item.id;
                 document.getElementById("menu-name").value = item.name;
                 document.getElementById("menu-description").value = item.description;
-                document.getElementById("menu-category").value = item.category;
+                const catSelect = document.getElementById("menu-category");
+                if (item.category) {
+                    if (![...catSelect.options].some(o => o.value.toLowerCase() === item.category.toLowerCase())) {
+                        const opt = document.createElement("option");
+                        opt.value = item.category;
+                        opt.textContent = item.category;
+                        catSelect.appendChild(opt);
+                    }
+                    catSelect.value = item.category;
+                }
                 document.getElementById("menu-type-select").value = item.type || "particular";
                 document.getElementById("menu-price").value = item.price;
-                
+
                 // Seleccionar Menú 1 al 30 de forma normalizada
                 const tagSelect = document.getElementById("menu-tag");
                 const currentTag = item.tag || "";
@@ -1990,7 +2043,7 @@ class NutriRootsApp {
                 document.getElementById("menu-image").value = item.image || "";
                 document.getElementById("menu-stock").value = item.stock ?? "";
                 document.getElementById("menu-available").checked = item.available;
-                
+
                 document.getElementById("menu-kcal").value = item.macros?.kcal || "";
                 document.getElementById("menu-protein").value = item.macros?.protein || "";
                 document.getElementById("menu-carbs").value = item.macros?.carbs || "";
@@ -2003,13 +2056,13 @@ class NutriRootsApp {
             document.getElementById("menu-tag").value = "";
             document.getElementById("menu-available").checked = true;
             document.getElementById("menu-stock").value = "";
-            
+
             document.getElementById("menu-kcal").value = "";
             document.getElementById("menu-protein").value = "";
             document.getElementById("menu-carbs").value = "";
             document.getElementById("menu-fat").value = "";
         }
-        
+
         modal.style.display = "flex";
     }
 
@@ -2022,7 +2075,7 @@ class NutriRootsApp {
 
     handleMenuSubmit(event) {
         event.preventDefault();
-        
+
         const id = document.getElementById("menu-id-field").value;
         const name = document.getElementById("menu-name").value.trim();
         const description = document.getElementById("menu-description").value.trim();
@@ -2032,15 +2085,15 @@ class NutriRootsApp {
         const tag = document.getElementById("menu-tag").value.trim();
         const image = document.getElementById("menu-image").value.trim();
         const available = document.getElementById("menu-available").checked;
-        
+
         const stockStr = document.getElementById("menu-stock").value.trim();
         const stock = stockStr === "" ? null : parseInt(stockStr, 10);
-        
+
         const kcal = document.getElementById("menu-kcal").value.trim();
         const protein = document.getElementById("menu-protein").value.trim();
         const carbs = document.getElementById("menu-carbs").value.trim();
         const fat = document.getElementById("menu-fat").value.trim();
-        
+
         const macros = {};
         if (kcal) macros.kcal = kcal;
         if (protein) macros.protein = protein;
@@ -2094,7 +2147,7 @@ class NutriRootsApp {
         const sources = ["logo1.svg", "logo.svg", "logo.png", "logo.jpg", "logo.jpeg", "logo.PNG", "logo.JPG", "logo.JPEG"];
         const currentSrcAttr = imgElement.getAttribute("src");
         const currentIndex = sources.indexOf(currentSrcAttr);
-        
+
         if (currentIndex > -1 && currentIndex < sources.length - 1) {
             imgElement.src = sources[currentIndex + 1];
         } else {
@@ -2108,7 +2161,7 @@ class NutriRootsApp {
         const sources = ["logo1.svg", "logo.png", "logo.svg"];
         const currentSrcAttr = imgElement.getAttribute("src");
         const currentIndex = sources.indexOf(currentSrcAttr);
-        
+
         if (currentIndex > -1 && currentIndex < sources.length - 1) {
             imgElement.src = sources[currentIndex + 1];
         } else {
@@ -2120,7 +2173,7 @@ class NutriRootsApp {
     renderCorporateCompanyDropdown() {
         const dropdown = document.getElementById("checkout-company-select");
         if (!dropdown) return;
-        
+
         if (this.companies.length === 0) {
             dropdown.innerHTML = `<option value="" disabled selected>No hay empresas autorizadas. Contacta al Admin.</option>`;
             return;
@@ -2135,12 +2188,12 @@ class NutriRootsApp {
     renderCompaniesTable() {
         const tbody = document.getElementById("companies-table-body");
         if (!tbody) return;
-        
+
         if (this.companies.length === 0) {
             tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; padding: 2rem; color: var(--dark-muted);">No hay empresas autorizadas. Agrega una nueva.</td></tr>`;
             return;
         }
-        
+
         tbody.innerHTML = this.companies.map((company, index) => `
             <tr>
                 <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${company.name}</td>
@@ -2169,7 +2222,7 @@ class NutriRootsApp {
         event.preventDefault();
         const name = document.getElementById("company-name-input").value.trim();
         const password = document.getElementById("company-password-input").value.trim();
-        
+
         if (name && password) {
             // Evitar duplicados (insensible a mayúsculas/minúsculas)
             if (this.companies.some(c => c.name.toLowerCase() === name.toLowerCase())) {
