@@ -14,6 +14,19 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// Mapa de iconos SVG profesionales para la interfaz
+const APP_ICONS = {
+    edit: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+    delete: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+    whatsapp: `<svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.176 8.176 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.44 0-2.86-.38-4.11-1.11l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.25-4.42c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.49-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.12.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.18-.47-.3z"/></svg>`,
+    company: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 0.25rem;"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/><line x1="8" y1="6" x2="8.01" y2="6"/><line x1="12" y1="6" x2="12.01" y2="6"/><line x1="16" y1="6" x2="16.01" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/></svg>`,
+    user: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 0.25rem;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+    package: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; vertical-align: -3px; margin-right: 0.4rem;"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+    emptyCart: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 52px; height: 52px; color: var(--gray-400); margin: 0 auto 0.8rem auto; display: block;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+    truck: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: -2px; margin-right: 0.3rem;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    checkCircle: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: -2px; margin-right: 0.3rem; color: var(--green-success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+};
+
 class NutriRootsApp {
     constructor() {
         // Datos de configuración
@@ -34,6 +47,7 @@ class NutriRootsApp {
         this.clientCompany = null; // Empresa cliente activa (solo en catálogo corporativo)
         this.companies = []; // Lista de empresas clientes autorizadas (solo corporativo)
         this.catalogType = "particular"; // Catálogo de viandas activo ('particular' o 'corporativo')
+        this.lastOrder = null; // Último pedido registrado para mostrar resumen en pantalla de éxito
         
         // Inicializar
         document.addEventListener("DOMContentLoaded", () => this.init());
@@ -41,7 +55,39 @@ class NutriRootsApp {
 
     async init() {
         this.activeCompany = "nutriroots";
+        await this.loadData();
 
+        // Recuperar último pedido de la sesión si existiera
+        const savedLastOrder = sessionStorage.getItem("nr_last_order");
+        if (savedLastOrder) {
+            try {
+                this.lastOrder = JSON.parse(savedLastOrder);
+            } catch (e) {
+                console.error("Error al cargar último pedido:", e);
+            }
+        }
+
+        // Verificar sesión de administración guardada
+        const savedSession = sessionStorage.getItem("nr_admin_session");
+        if (savedSession) {
+            this.adminSession = savedSession;
+            this.selectCompany("nutriroots", false);
+            this.showView("admin");
+            return;
+        }
+
+        // Verificar si ingresa con (?admin) directo, abrir login
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("admin")) {
+            this.updateNavVisibility("login");
+            this.showView("login");
+            return;
+        }
+
+        // Por defecto mostrar el landing page para elegir tipo de cliente
+        this.selectCompany("nutriroots", false);
+        this.showView("landing");
+        
         // Establecer fecha mínima en el formulario (hoy)
         const dateInput = document.getElementById("checkout-date");
         if (dateInput) {
@@ -49,62 +95,13 @@ class NutriRootsApp {
             dateInput.min = today;
             dateInput.value = today;
         }
-
-        // Escuchar el estado de autenticación de Firebase
-        if (typeof firebase !== 'undefined') {
-            let initialAuthResolved = false;
-            
-            firebase.auth().onAuthStateChanged(async (user) => {
-                if (user) {
-                    if (user.email) {
-                        // El usuario es Admin
-                        const username = user.email.split('@')[0];
-                        this.adminSession = username;
-                        sessionStorage.setItem("nr_admin_session", username);
-                        
-                        await this.loadData();
-                        await this.loadOrders();
-                        
-                        this.selectCompany("nutriroots", false);
-                        this.showView("admin");
-                    } else {
-                        // El usuario es un cliente anónimo
-                        this.adminSession = null;
-                        
-                        await this.loadData();
-                        
-                        if (!initialAuthResolved) {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const savedSession = sessionStorage.getItem("nr_admin_session");
-                            
-                            if (urlParams.has("admin") || savedSession) {
-                                // Si se solicitó admin o había una sesión expirada, mostrar login
-                                this.updateNavVisibility("login");
-                                this.showView("login");
-                            } else {
-                                this.selectCompany("nutriroots", false);
-                                this.showView("landing");
-                            }
-                        }
-                    }
-                } else {
-                    // No hay sesión, iniciar anónimamente
-                    firebase.auth().signInAnonymously().catch(console.error);
-                }
-                initialAuthResolved = true;
-            });
-        } else {
-            // Fallback sin Firebase
-            await this.loadData();
-            this.selectCompany("nutriroots", false);
-            this.showView("landing");
-        }
     }
 
     // --- MANEJO DE PERSISTENCIA ---
     async loadData() {
         try {
             const menuDoc = await db.collection("nutriroots_data").doc("menu").get();
+            const ordersDoc = await db.collection("nutriroots_data").doc("orders").get();
             const companiesDoc = await db.collection("nutriroots_data").doc("companies").get();
 
             if (menuDoc.exists) {
@@ -123,11 +120,17 @@ class NutriRootsApp {
                 this.saveMenuToLocalStorage();
             }
 
-            // Las órdenes de Firebase se cargan por separado por seguridad y rendimiento.
-            // Cargamos de LocalStorage como fallback.
-            const localOrders = localStorage.getItem("nr_orders_unified_v2");
-            if (localOrders) {
-                this.orders = JSON.parse(localOrders);
+            // Nueva colección para documentos individuales
+            const ordersSnapshot = await db.collection("orders").get();
+            
+            if (!ordersSnapshot.empty) {
+                this.orders = ordersSnapshot.docs.map(doc => doc.data());
+                // Ordenar por ID descendente (más nuevos primero)
+                this.orders.sort((a, b) => {
+                    const idA = a.id || "";
+                    const idB = b.id || "";
+                    return idB.localeCompare(idA);
+                });
             } else {
                 this.orders = [];
             }
@@ -183,27 +186,6 @@ class NutriRootsApp {
     saveCompaniesToLocalStorage() {
         db.collection("nutriroots_data").doc("companies").set({ data: this.companies }).catch(console.error);
         localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
-    }
-
-    async loadOrders() {
-        if (typeof db === 'undefined') return;
-        try {
-            const ordersSnapshot = await db.collection("orders").get();
-            if (!ordersSnapshot.empty) {
-                this.orders = ordersSnapshot.docs.map(doc => doc.data());
-                // Ordenar por ID descendente (más nuevos primero)
-                this.orders.sort((a, b) => {
-                    const idA = a.id || "";
-                    const idB = b.id || "";
-                    return idB.localeCompare(idA);
-                });
-            } else {
-                this.orders = [];
-            }
-            this.saveOrdersToLocalStorage();
-        } catch (error) {
-            console.error("Error cargando órdenes de Firebase:", error);
-        }
     }
 
     migrateMenuCategories() {
@@ -380,7 +362,7 @@ class NutriRootsApp {
         this.renderMenuGrid();
     }
 
-    async handleLoginSubmit(event) {
+    handleLoginSubmit(event) {
         event.preventDefault();
         const username = document.getElementById("login-username").value.trim().toLowerCase();
         const password = document.getElementById("login-password").value;
@@ -393,52 +375,20 @@ class NutriRootsApp {
         };
 
         if (credentials[username] && credentials[username] === password) {
-            const emailMap = {
-                "admin": "admin@nutriroots.com",
-                "nutriroots": "nutriroots@nutriroots.com",
-                "corporativo": "corporativo@nutriroots.com"
-            };
-            const email = emailMap[username] || `${username}@nutriroots.com`;
-
-            try {
-                if (typeof firebase !== 'undefined') {
-                    await firebase.auth().signInWithEmailAndPassword(email, password);
-                } else {
-                    // Fallback sin Firebase (desarrollo local)
-                    if (errorMsg) errorMsg.style.display = "none";
-                    this.adminSession = username;
-                    sessionStorage.setItem("nr_admin_session", username);
-                    this.selectCompany("nutriroots", false);
-                    this.showView("admin");
-                }
-            } catch (error) {
-                console.error("Error autenticando con Firebase:", error);
-                if (errorMsg) {
-                    errorMsg.textContent = "Error al autenticar: " + error.message;
-                    errorMsg.style.display = "block";
-                }
-            }
+            if (errorMsg) errorMsg.style.display = "none";
+            this.adminSession = username;
+            sessionStorage.setItem("nr_admin_session", username);
+            this.selectCompany("nutriroots", false);
+            this.showView("admin");
         } else {
-            if (errorMsg) {
-                errorMsg.textContent = "Usuario o contraseña incorrectos.";
-                errorMsg.style.display = "block";
-            }
+            if (errorMsg) errorMsg.style.display = "block";
         }
     }
 
-    async handleLogout() {
+    handleLogout() {
         sessionStorage.removeItem("nr_admin_session");
         this.adminSession = null;
         this.activeCompany = "nutriroots";
-        
-        if (typeof firebase !== 'undefined') {
-            try {
-                await firebase.auth().signOut();
-                await firebase.auth().signInAnonymously();
-            } catch (error) {
-                console.error("Error al cerrar sesión o re-iniciar anónimamente:", error);
-            }
-        }
         
         const cartToggle = document.getElementById("btn-cart-toggle");
         if (cartToggle) cartToggle.style.display = "inline-flex";
@@ -536,6 +486,11 @@ class NutriRootsApp {
                     }
                     this.handleCheckoutTypeChange();
                 }
+                if (viewName === "success") {
+                    if (this.lastOrder) {
+                        this.renderSuccessView(this.lastOrder);
+                    }
+                }
             }
         }
         
@@ -550,7 +505,7 @@ class NutriRootsApp {
     }
 
     scrollToMenu() {
-        const menuGrid = document.getElementById("menu-section");
+        const menuGrid = document.getElementById("menú-section") || document.getElementById("menu-section");
         if (menuGrid) {
             menuGrid.scrollIntoView({ behavior: "smooth", block: "start" });
         }
@@ -647,8 +602,8 @@ class NutriRootsApp {
                         </div>
                       `
                     : `
-                        <button class="btn-list-add" onclick="app.addToCart('${item.id}')" ${!isAvailable ? 'disabled' : ''}>
-                            ${isAvailable ? '+ Agregar' : 'Disponible a la venta'}
+                        <button class="btn-list-add" onclick="app.addToCart('${item.id}')" ${!isAvailable ? 'disabled style="background: var(--gray-300); color: var(--gray-600); cursor: not-allowed; box-shadow: none;"' : ''}>
+                            ${isAvailable ? '+ Agregar' : 'Sin Stock'}
                         </button>
                       `;
 
@@ -715,7 +670,7 @@ class NutriRootsApp {
                 return `
                     <div class="menu-card" style="opacity: ${isAvailable ? 1 : 0.7}">
                         ${hasTag ? `<div class="menu-card-badge ${!isAvailable ? 'out-of-stock' : ''}">${displayTag}</div>` : ''}
-                        ${!isAvailable && !hasTag ? `<div class="menu-card-badge out-of-stock">Disponible a la venta</div>` : ''}
+                        ${!isAvailable && !hasTag ? `<div class="menu-card-badge out-of-stock">Sin Stock</div>` : ''}
                         <div class="menu-card-image-wrapper">
                             <img class="menu-card-image" src="${imageUrl}" alt="${displayName}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80'">
                         </div>
@@ -743,14 +698,12 @@ class NutriRootsApp {
     toggleCart() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
-        const floatingBar = document.getElementById("floating-cart-bar");
         
         if (drawer.classList.contains("open")) {
             this.closeCart();
         } else {
             drawer.classList.add("open");
             overlay.style.display = "block";
-            if (floatingBar) floatingBar.style.display = "none";
             this.renderCartItems();
         }
     }
@@ -763,7 +716,6 @@ class NutriRootsApp {
             drawer.classList.remove("open");
             overlay.style.display = "none";
         }
-        this.updateCartUI();
     }
 
     addToCart(itemId) {
@@ -799,11 +751,9 @@ class NutriRootsApp {
     openCartBriefly() {
         const drawer = document.getElementById("cart-drawer");
         const overlay = document.getElementById("cart-drawer-overlay");
-        const floatingBar = document.getElementById("floating-cart-bar");
         if (!drawer.classList.contains("open")) {
             drawer.classList.add("open");
             overlay.style.display = "block";
-            if (floatingBar) floatingBar.style.display = "none";
             this.renderCartItems();
         }
     }
@@ -888,7 +838,7 @@ class NutriRootsApp {
         if (this.cart.length === 0) {
             container.innerHTML = `
                 <div class="cart-empty">
-                    <div class="cart-empty-icon">🛍️</div>
+                    <div class="cart-empty-icon">${APP_ICONS.emptyCart}</div>
                     <p>Tu carrito está vacío</p>
                     <button class="btn-primary" style="margin-top: 1rem; padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="app.toggleCart()">Explorar Platos</button>
                 </div>
@@ -946,13 +896,13 @@ class NutriRootsApp {
         if (promoDiv) {
             promoDiv.style.display = "block";
             if (shipping === 0) {
-                promoDiv.innerHTML = "¡Envío GRATIS aplicado! 🎉";
+                promoDiv.innerHTML = `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">${APP_ICONS.checkCircle} <strong>¡Envío GRATIS aplicado!</strong></span>`;
                 promoDiv.style.backgroundColor = "var(--green-success-light)";
                 promoDiv.style.color = "var(--green-success)";
                 promoDiv.style.border = "1px solid rgba(16, 185, 129, 0.2)";
             } else {
                 const remaining = 10 - totalItems;
-                promoDiv.innerHTML = `Llevas ${totalItems} viandas. ¡Agrega ${remaining} más para envío GRATIS! 🚚`;
+                promoDiv.innerHTML = `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">${APP_ICONS.truck} Llevas ${totalItems} viandas. ¡Agrega ${remaining} más para envío GRATIS!</span>`;
                 promoDiv.style.backgroundColor = "var(--yellow-warning-light)";
                 promoDiv.style.color = "var(--yellow-warning)";
                 promoDiv.style.border = "1px solid rgba(245, 158, 11, 0.2)";
@@ -1076,9 +1026,8 @@ class NutriRootsApp {
         //     }
         // }
 
-        // Generar un ID secuencial basado en tiempo y aleatorio único
-        // Evitamos usar this.orders.length para que funcione sin necesidad de cargar todos los pedidos del servidor en la máquina del cliente.
-        const orderNumber = Math.floor(Date.now() / 1000) % 1000000;
+        // Generar un ID incremental o aleatorio único
+        const orderNumber = 1000 + this.orders.length + 1;
         const uniqueSuffix = Math.floor(Math.random() * 9000) + 1000;
         const orderId = `NR-${orderNumber}-${uniqueSuffix}`;
 
@@ -1136,12 +1085,10 @@ class NutriRootsApp {
         }
 
 
-        // Crear el mensaje para WhatsApp
-        const waUrl = this.generateWhatsAppLink(newOrder);
-        const waButton = document.getElementById("btn-whatsapp-send");
-        if (waButton) {
-            waButton.href = waUrl;
-        }
+        // Guardar pedido como último pedido y preparar resumen en pantalla de éxito
+        this.lastOrder = newOrder;
+        sessionStorage.setItem("nr_last_order", JSON.stringify(newOrder));
+        this.renderSuccessView(newOrder);
 
         // Limpiar carrito
         this.cart = [];
@@ -1150,6 +1097,142 @@ class NutriRootsApp {
 
         // Mostrar pantalla de éxito
         this.showView("success");
+    }
+
+    renderSuccessView(order) {
+        if (!order) return;
+
+        // Código de Pedido
+        const orderIdEl = document.getElementById("success-order-id");
+        if (orderIdEl) {
+            orderIdEl.innerText = `#${order.id}`;
+        }
+
+        // Listado de ítems pedidos
+        const itemsContainer = document.getElementById("success-order-items");
+        if (itemsContainer && Array.isArray(order.items)) {
+            const isCorp = order.companyName || this.catalogType === "corporativo";
+            itemsContainer.innerHTML = order.items.map(item => {
+                const itemTotal = (item.price || 0) * (item.quantity || 1);
+                const priceHtml = isCorp
+                    ? `<span style="color: var(--dark-muted); font-size: 0.85rem;">Menú Corporativo</span>`
+                    : `<strong>$${itemTotal.toLocaleString("es-AR")}</strong>`;
+
+                return `
+                    <div class="success-item-row">
+                        <div style="display: flex; align-items: center;">
+                            <span class="success-item-qty">${item.quantity}x</span>
+                            <span class="success-item-name">${item.name}</span>
+                        </div>
+                        <div>${priceHtml}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // Totales y Costos
+        const subtotalEl = document.getElementById("success-subtotal");
+        const shippingEl = document.getElementById("success-shipping");
+        const totalEl = document.getElementById("success-total");
+        const subtotalRow = document.getElementById("success-subtotal-row");
+        const shippingRow = document.getElementById("success-shipping-row");
+
+        const isCorp = order.companyName || this.catalogType === "corporativo";
+        if (isCorp) {
+            if (subtotalRow) subtotalRow.style.display = "none";
+            if (shippingRow) shippingRow.style.display = "none";
+            if (totalEl) totalEl.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa (${order.companyName || 'Corporativo'})</span>`;
+        } else {
+            if (subtotalRow) subtotalRow.style.display = "flex";
+            if (shippingRow) shippingRow.style.display = "flex";
+            if (subtotalEl) subtotalEl.innerText = `$${(order.subtotal || 0).toLocaleString("es-AR")}`;
+            if (shippingEl) {
+                const shippingVal = order.shipping || 0;
+                shippingEl.innerHTML = shippingVal === 0 
+                    ? `<span style="color: var(--green-success); font-weight: 700;">Gratis</span>` 
+                    : `$${shippingVal.toLocaleString("es-AR")}`;
+            }
+            if (totalEl) totalEl.innerText = `$${(order.total || 0).toLocaleString("es-AR")}`;
+        }
+
+        // Datos del Cliente y Entrega
+        const detailsContainer = document.getElementById("success-order-details");
+        if (detailsContainer) {
+            let detailsHtml = `
+                <div class="success-detail-item">
+                    <span class="success-detail-label">Cliente</span>
+                    <span class="success-detail-val">${order.customerName || '-'}</span>
+                </div>
+                <div class="success-detail-item">
+                    <span class="success-detail-label">Teléfono</span>
+                    <span class="success-detail-val">${order.phone || 'No especificado'}</span>
+                </div>
+            `;
+
+            if (order.companyName) {
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Empresa</span>
+                        <span class="success-detail-val">${order.companyName}</span>
+                    </div>
+                `;
+            }
+
+            if (order.address) {
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Dirección de Entrega</span>
+                        <span class="success-detail-val">${order.address}</span>
+                    </div>
+                `;
+            }
+
+            if (order.deliveryDate) {
+                let dateDisplay = order.deliveryDate;
+                try {
+                    dateDisplay = new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                } catch (e) {
+                    dateDisplay = order.deliveryDate;
+                }
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Fecha de Entrega</span>
+                        <span class="success-detail-val" style="text-transform: capitalize;">${dateDisplay}</span>
+                    </div>
+                `;
+            }
+
+            if (order.deliveryTime) {
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Franja Horaria</span>
+                        <span class="success-detail-val">${order.deliveryTime}</span>
+                    </div>
+                `;
+            }
+
+            if (order.paymentMethod) {
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Medio de Pago</span>
+                        <span class="success-detail-val">${order.paymentMethod}</span>
+                    </div>
+                `;
+            }
+
+            if (order.notes) {
+                detailsHtml += `
+                    <div class="success-detail-item" style="grid-column: 1 / -1;">
+                        <span class="success-detail-label">Notas / Aclaraciones</span>
+                        <span class="success-detail-val" style="font-style: italic;">"${order.notes}"</span>
+                    </div>
+                `;
+            }
+
+            detailsContainer.innerHTML = detailsHtml;
+        }
     }
 
     generateWhatsAppLink(order) {
@@ -1249,6 +1332,8 @@ class NutriRootsApp {
         const viandasSpan = document.getElementById("stat-viandas-count");
         const menuBreakdownContainer = document.getElementById("stat-menu-breakdown");
         
+        if (!totalRevenueSpan) return;
+
         // Calcular ganancias solo de pedidos entregados o activos (no cancelados)
         const validOrders = this.orders.filter(order => order.status !== "cancelado");
         let totalRevenue = 0;
@@ -1287,45 +1372,23 @@ class NutriRootsApp {
         // Pedidos que requieren acción (pendiente o en cocina)
         const pendingCount = this.orders.filter(order => order.status === "pendiente" || order.status === "en_cocina").length;
 
-        if (totalRevenueSpan) totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
-        if (totalOrdersSpan) totalOrdersSpan.innerText = totalOrdersCount;
-        if (pendingSpan) pendingSpan.innerText = pendingCount;
+        totalRevenueSpan.innerText = `$${totalRevenue.toLocaleString("es-AR")}`;
+        totalOrdersSpan.innerText = totalOrdersCount;
+        pendingSpan.innerText = pendingCount;
         
         const totalViandasSpan = document.getElementById("stat-total-viandas-count");
         if (totalViandasSpan) totalViandasSpan.innerText = totalViandasToCook;
         
-        const ctx = document.getElementById('stat-viandas-chart');
-        if (ctx) {
-            const labels = Object.keys(viandasBreakdown);
-            const data = Object.values(viandasBreakdown);
-            
-            if (window.viandasChart) {
-                window.viandasChart.destroy();
-            }
-            
-            if (labels.length > 0) {
-                window.viandasChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: data,
-                            backgroundColor: ['#ea580c', '#4338ca', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: { font: { family: "'Inter', sans-serif" } }
-                            }
-                        }
-                    }
-                });
+        if (viandasSpan) {
+            if (Object.keys(viandasBreakdown).length > 0) {
+                const breakdownHtml = Object.keys(viandasBreakdown).map(k => {
+                    return `<div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--gray-200); padding-bottom: 0.15rem; margin-bottom: 0.15rem; font-size: 0.85rem; color: var(--dark-muted);">
+                                <span>${k}</span> <span style="font-weight:700; color:var(--dark);">${viandasBreakdown[k]}</span>
+                            </div>`;
+                }).join('');
+                viandasSpan.innerHTML = `<div style="margin-top: 0.5rem;">${breakdownHtml}</div>`;
+            } else {
+                viandasSpan.innerHTML = "<div style='font-size:0.85rem; color:var(--gray-400); margin-top: 0.5rem;'>Sin datos</div>";
             }
         }
 
@@ -1431,8 +1494,8 @@ class NutriRootsApp {
                     </td>
                     <td>
                         ${order.companyName 
-                            ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 0.2rem;">🏢 ${order.companyName}</span>` 
-                            : `<span style="font-size: 0.8rem; color: var(--gray-500); font-style: italic;">👤 Cliente Particular</span>`}
+                            ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center;">${APP_ICONS.company} ${order.companyName}</span>` 
+                            : `<span style="font-size: 0.8rem; color: var(--gray-500); display: flex; align-items: center; font-style: italic;">${APP_ICONS.user} Cliente Particular</span>`}
                     </td>
                     <td style="font-size: 0.85rem; line-height: 1.3; vertical-align: top;">${itemsSummary}</td>
                     <td style="font-size: 0.85rem; line-height: 1.3; max-width: 200px; word-break: break-word;" title="${order.notes || ''}">
@@ -1450,9 +1513,9 @@ class NutriRootsApp {
                                 <option value="entregado" ${order.status === 'entregado' ? 'selected' : ''}>Entregado</option>
                                 <option value="cancelado" ${order.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
                             </select>
-                            <button class="btn-icon edit" onclick="app.openOrderModal('${order.id}')" title="Editar Pedido">✏️</button>
-                            <button class="btn-icon delete" onclick="app.deleteOrder('${order.id}')" title="Eliminar Pedido">🗑️</button>
-                            ${order.phone ? `<button class="btn-icon whatsapp" onclick="app.sendWhatsAppConfirmation('${order.id}')" title="Enviar WhatsApp al Cliente" style="background: rgba(37, 211, 102, 0.1); color: #25d366; border-color: rgba(37, 211, 102, 0.2);">💬</button>` : ''}
+                            <button class="btn-icon edit" onclick="app.openOrderModal('${order.id}')" title="Editar Pedido">${APP_ICONS.edit}</button>
+                            <button class="btn-icon delete" onclick="app.deleteOrder('${order.id}')" title="Eliminar Pedido">${APP_ICONS.delete}</button>
+                            ${order.phone ? `<button class="btn-icon whatsapp" onclick="app.sendWhatsAppConfirmation('${order.id}')" title="Enviar WhatsApp al Cliente">${APP_ICONS.whatsapp}</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1640,7 +1703,7 @@ class NutriRootsApp {
                 const dateFormatted = order.deliveryDate ? new Date(order.deliveryDate + 'T00:00:00').toLocaleDateString("es-AR", {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}) : "";
                 
                 detailsContainer.innerHTML = `
-                    <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; border-bottom: 1px solid var(--primary-light); padding-bottom: 0.2rem;">📦 Detalles de Entrega y Pago</div>
+                    <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; border-bottom: 1px solid var(--primary-light); padding-bottom: 0.4rem; display: flex; align-items: center;">${APP_ICONS.package} Detalles de Entrega y Pago</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Teléfono:</strong> ${order.phone || 'N/A'}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Dirección:</strong> ${order.address || 'N/A'}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Fecha:</strong> ${dateFormatted || 'N/A'}</div>
@@ -1653,41 +1716,129 @@ class NutriRootsApp {
             }
         }
 
-        // Cargar y renderizar la lista de platos y totales en el modal
-        const itemsList = document.getElementById("order-items-list");
-        if (itemsList) {
-            const itemsHtml = order.items.map(item => `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; border-bottom: 1px dashed var(--gray-200); padding-bottom: 0.4rem;">
-                    <span><strong>${item.quantity}x</strong> ${item.name}</span>
-                    <span style="font-weight: 600;">$${(item.price * item.quantity).toLocaleString("es-AR")}</span>
-                </div>
-            `).join("");
-            
-            const totalsHtml = `
-                <div style="margin-top: 0.8rem; border-top: 1px solid var(--gray-300); padding-top: 0.6rem; font-size: 0.9rem;">
-                    <div style="display: flex; justify-content: space-between; color: var(--gray-600); margin-bottom: 0.2rem;">
-                        <span>Subtotal</span>
-                        <span>$${order.subtotal.toLocaleString("es-AR")}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; color: var(--gray-600); margin-bottom: 0.2rem;">
-                        <span>Envío</span>
-                        <span>${order.shipping === 0 ? 'Gratis' : `$${order.shipping.toLocaleString("es-AR")}`}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary); font-size: 1rem; margin-top: 0.4rem;">
-                        <span>Total</span>
-                        <span>$${order.total.toLocaleString("es-AR")}</span>
-                    </div>
-                </div>
-            `;
-            itemsList.innerHTML = itemsHtml + totalsHtml;
-        }
+        // Cargar platos y preparar edición interactiva
+        this.editingOrder = order;
+        this.editingOrderItems = (order.items || []).map(item => ({ ...item }));
+        this.editingOrderShipping = typeof order.shipping === 'number' ? order.shipping : 0;
+        
+        this.populateOrderAddDishSelect();
+        this.renderOrderItemsEdit();
         
         modal.style.display = "flex";
+    }
+
+    populateOrderAddDishSelect() {
+        const select = document.getElementById("order-add-dish-select");
+        if (!select) return;
+
+        let optionsHtml = '<option value="">-- Seleccionar plato para agregar --</option>';
+        this.menu.forEach(dish => {
+            optionsHtml += `<option value="${dish.id}">${dish.name} ($${(dish.price || 0).toLocaleString("es-AR")})</option>`;
+        });
+        select.innerHTML = optionsHtml;
+    }
+
+    renderOrderItemsEdit() {
+        const container = document.getElementById("order-items-edit-list");
+        const subtotalEl = document.getElementById("order-edit-subtotal");
+        const shippingEl = document.getElementById("order-edit-shipping");
+        const totalEl = document.getElementById("order-edit-total");
+
+        if (!container) return;
+
+        if (!this.editingOrderItems || this.editingOrderItems.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--dark-muted); padding: 1rem 0; font-size: 0.88rem;">No hay platos en este pedido. Puedes agregar uno usando el selector de abajo.</div>`;
+        } else {
+            container.innerHTML = this.editingOrderItems.map(item => {
+                const itemTotal = (item.price || 0) * (item.quantity || 1);
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px dashed var(--gray-200);">
+                        <div style="flex-grow: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">
+                                ${item.name}
+                            </div>
+                            <div style="font-size: 0.78rem; color: var(--dark-muted);">
+                                $${(item.price || 0).toLocaleString("es-AR")} c/u
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <button type="button" onclick="app.updateOrderEditItemQty('${item.id}', -1)" style="width: 26px; height: 26px; border: 1px solid var(--gray-300); background: var(--white); border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+                            <span style="font-weight: 700; min-width: 22px; text-align: center; font-size: 0.9rem;">${item.quantity}</span>
+                            <button type="button" onclick="app.updateOrderEditItemQty('${item.id}', 1)" style="width: 26px; height: 26px; border: 1px solid var(--gray-300); background: var(--white); border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+                        </div>
+                        <div style="font-weight: 700; font-size: 0.9rem; color: var(--dark); min-width: 75px; text-align: right;">
+                            $${itemTotal.toLocaleString("es-AR")}
+                        </div>
+                        <button type="button" class="btn-icon delete" onclick="app.removeOrderEditItem('${item.id}')" title="Quitar este plato" style="width: 26px; height: 26px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;">${APP_ICONS.delete}</button>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        const subtotal = (this.editingOrderItems || []).reduce((acc, it) => acc + ((it.price || 0) * (it.quantity || 1)), 0);
+        const shipping = typeof this.editingOrderShipping === 'number' ? this.editingOrderShipping : 0;
+        const total = subtotal + shipping;
+
+        if (subtotalEl) subtotalEl.innerText = `$${subtotal.toLocaleString("es-AR")}`;
+        if (shippingEl) shippingEl.innerText = shipping === 0 ? "Gratis" : `$${shipping.toLocaleString("es-AR")}`;
+        if (totalEl) totalEl.innerText = `$${total.toLocaleString("es-AR")}`;
+    }
+
+    updateOrderEditItemQty(itemId, change) {
+        if (!this.editingOrderItems) return;
+        const item = this.editingOrderItems.find(it => it.id === itemId);
+        if (!item) return;
+
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            this.removeOrderEditItem(itemId);
+        } else {
+            this.renderOrderItemsEdit();
+        }
+    }
+
+    removeOrderEditItem(itemId) {
+        if (!this.editingOrderItems) return;
+        this.editingOrderItems = this.editingOrderItems.filter(it => it.id !== itemId);
+        this.renderOrderItemsEdit();
+    }
+
+    addDishToOrderEdit() {
+        const select = document.getElementById("order-add-dish-select");
+        if (!select || !select.value) {
+            alert("Por favor selecciona un plato de la lista para agregarlo al pedido.");
+            return;
+        }
+
+        const dishId = select.value;
+        const dish = this.menu.find(d => d.id === dishId);
+        if (!dish) return;
+
+        if (!this.editingOrderItems) this.editingOrderItems = [];
+
+        const existing = this.editingOrderItems.find(it => it.id === dishId);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            this.editingOrderItems.push({
+                id: dish.id,
+                name: dish.name,
+                tag: dish.tag || "",
+                description: dish.description || "",
+                price: dish.price || 0,
+                quantity: 1
+            });
+        }
+
+        select.value = "";
+        this.renderOrderItemsEdit();
     }
 
     closeOrderModal() {
         const modal = document.getElementById("order-modal");
         if (modal) modal.style.display = "none";
+        this.editingOrder = null;
+        this.editingOrderItems = [];
     }
 
     handleOrderSubmit(event) {
@@ -1710,6 +1861,14 @@ class NutriRootsApp {
             order.status = status;
             order.notes = notes;
             
+            // Actualizar lista de platos y recalcular totales
+            if (this.editingOrderItems) {
+                order.items = this.editingOrderItems.map(it => ({ ...it }));
+                const subtotal = order.items.reduce((acc, it) => acc + ((it.price || 0) * (it.quantity || 1)), 0);
+                order.subtotal = subtotal;
+                order.total = subtotal + (order.shipping || 0);
+            }
+
             // Guardar individualmente en Firebase
             if (typeof db !== 'undefined') {
                 db.collection("orders").doc(id).set(order).catch(console.error);
@@ -1762,8 +1921,8 @@ class NutriRootsApp {
                             <span style="font-size: 0.75rem; color: var(--dark-muted); font-weight: 600;">Disp:</span>
                             <input type="checkbox" ${item.available ? 'checked' : ''} onchange="app.toggleItemAvailability('${item.id}', this.checked)" style="cursor: pointer;">
                         </div>
-                        <button class="btn-icon edit" onclick="app.openMenuModal('${item.id}')" title="Editar">✏️</button>
-                        <button class="btn-icon delete" onclick="app.deleteMenuItem('${item.id}')" title="Eliminar">🗑️</button>
+                        <button class="btn-icon edit" onclick="app.openMenuModal('${item.id}')" title="Editar">${APP_ICONS.edit}</button>
+                        <button class="btn-icon delete" onclick="app.deleteMenuItem('${item.id}')" title="Eliminar">${APP_ICONS.delete}</button>
                     </div>
                 </div>
             `;
@@ -1805,15 +1964,6 @@ class NutriRootsApp {
         form.reset();
         document.getElementById("menu-id-field").value = "";
         
-        // Rellenar datalist de categorías de manera dinámica
-        const datalist = document.getElementById("categories-datalist");
-        if (datalist) {
-            const currentCats = new Set(this.menu.map(item => item.category).filter(c => c && c.trim() !== ""));
-            const defaultCats = ["Clásicos", "Pastas", "Saludable", "Postres"];
-            const allCats = new Set([...defaultCats, ...currentCats]);
-            datalist.innerHTML = Array.from(allCats).map(cat => `<option value="${cat}"></option>`).join("");
-        }
-        
         if (itemId) {
             // Modo Edición
             const item = this.menu.find(i => i.id === itemId);
@@ -1825,7 +1975,18 @@ class NutriRootsApp {
                 document.getElementById("menu-category").value = item.category;
                 document.getElementById("menu-type-select").value = item.type || "particular";
                 document.getElementById("menu-price").value = item.price;
-                document.getElementById("menu-tag").value = item.tag || "";
+                
+                // Seleccionar Menú 1 al 30 de forma normalizada
+                const tagSelect = document.getElementById("menu-tag");
+                const currentTag = item.tag || "";
+                tagSelect.value = currentTag;
+                if (!tagSelect.value && currentTag) {
+                    const match = currentTag.match(/\d+/);
+                    if (match) {
+                        tagSelect.value = `Menú ${match[0]}`;
+                    }
+                }
+
                 document.getElementById("menu-image").value = item.image || "";
                 document.getElementById("menu-stock").value = item.stock ?? "";
                 document.getElementById("menu-available").checked = item.available;
@@ -1839,6 +2000,7 @@ class NutriRootsApp {
             // Modo Creación
             title.innerText = "Agregar Nueva Vianda";
             document.getElementById("menu-type-select").value = "particular";
+            document.getElementById("menu-tag").value = "";
             document.getElementById("menu-available").checked = true;
             document.getElementById("menu-stock").value = "";
             
@@ -1943,18 +2105,14 @@ class NutriRootsApp {
     }
 
     handleHeroLogoError(imgElement) {
-        const sources = ["logo1.svg", "logo.svg", "logo.png", "logo.jpg", "logo.jpeg", "logo.PNG", "logo.JPG", "logo.JPEG"];
+        const sources = ["logo1.svg", "logo.png", "logo.svg"];
         const currentSrcAttr = imgElement.getAttribute("src");
         const currentIndex = sources.indexOf(currentSrcAttr);
         
         if (currentIndex > -1 && currentIndex < sources.length - 1) {
             imgElement.src = sources[currentIndex + 1];
         } else {
-            imgElement.src = "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80";
-            imgElement.style.objectFit = "cover";
-            imgElement.style.backgroundColor = "transparent";
-            imgElement.style.padding = "0";
-            imgElement.style.boxShadow = "var(--shadow-lg)";
+            imgElement.style.display = "none";
         }
     }
 
@@ -1988,7 +2146,7 @@ class NutriRootsApp {
                 <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${company.name}</td>
                 <td style="font-family: monospace; font-size: 0.9rem; color: var(--gray-600);">${company.password}</td>
                 <td style="text-align: center;">
-                    <button class="btn-icon delete" onclick="app.deleteCompany(${index})" title="Eliminar Empresa" style="padding: 0.4rem 0.6rem; background: none; border: none; cursor: pointer; font-size: 1.1rem;">🗑️</button>
+                    <button class="btn-icon delete" onclick="app.deleteCompany(${index})" title="Eliminar Empresa" style="margin: 0 auto;">${APP_ICONS.delete}</button>
                 </td>
             </tr>
         `).join("");
@@ -2015,7 +2173,7 @@ class NutriRootsApp {
         if (name && password) {
             // Evitar duplicados (insensible a mayúsculas/minúsculas)
             if (this.companies.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-                alert("⚠️ Esta empresa ya se encuentra autorizada.");
+                alert("Esta empresa ya se encuentra autorizada.");
                 return;
             }
             this.companies.push({ name, password });

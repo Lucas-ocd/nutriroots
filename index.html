@@ -9,6 +9,7 @@
     <meta property="og:description" content="Comida casera lista para disfrutar. Elegí tu menú semanal y recibilo en tu hogar u oficina.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="es_AR">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +18,9 @@
     <nav class="navbar">
         <div class="nav-brand" onclick="app.handleBrandClick()">
             <img id="brand-logo" src="logo1.svg" alt="NutriRoots Logo" style="height: 55px; width: auto; object-fit: contain; display: none; margin-right: 0.5rem; border-radius: var(--radius-sm);" onload="this.style.display='inline'; document.getElementById('brand-icon-fallback').style.display='none';" onerror="app.handleLogoError(this)">
-            <span id="brand-icon-fallback" class="brand-icon">🌱</span>
+            <span id="brand-icon-fallback" class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            </span>
             <div id="brand-name-container">Nutri<span>Roots</span></div>
         </div>
         
@@ -25,8 +28,9 @@
             <a class="nav-link active" id="nav-client-link" onclick="app.handleCatalogLinkClick()">Opción de menús</a>
             <a class="nav-link" id="nav-admin-link" onclick="app.handleAdminLinkClick()">Panel Admin</a>
             
-            <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()" style="display: none;">
-                🛒 Carrito
+            <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()" style="display: none; align-items: center; gap: 0.4rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                <span>Carrito</span>
                 <span class="cart-count" id="cart-count">0</span>
             </button>
         </div>
@@ -35,27 +39,60 @@
     <!-- MAIN VIEW CONTAINER -->
     <main id="main-content">
 
-        <!-- VISTA LANDING: Selección Inicial -->
-        <section id="view-landing" class="view-section" style="display: block;">
-            <div class="landing-container" style="max-width: 800px; margin: 4rem auto; padding: 0 1.5rem; text-align: center;">
-                <img src="logo1.svg" alt="NutriRoots Logo" style="height: 120px; width: auto; object-fit: contain; mix-blend-mode: multiply; margin-bottom: 1rem;" onerror="this.style.display='none'">
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--dark);">Bienvenido a <span style="color: var(--primary);">NutriRoots</span></h1>
-                <p style="font-size: 1.15rem; color: var(--gray-600); margin-bottom: 1.5rem; line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">Comidas saludables, caseras y listas en minutos. En NutriRoots elaboramos viandas congeladas con ingredientes de primera calidad y recetas equilibradas para que disfrutes una alimentación práctica, rica y nutritiva. Elegí tus platos favoritos, guardalos en el freezer y tené siempre una comida lista cuando la necesites.</p>
-                <p style="font-size: 1.1rem; color: var(--dark); font-weight: 600; margin-bottom: 3rem;">¿Para quién es tu pedido de viandas hoy?</p>
+        <section id="view-landing" class="view-section landing-section" style="display: block;">
+            <div class="landing-inner">
+                <img src="logo1.svg" alt="NutriRoots Logo" class="landing-logo" onerror="this.style.display='none'">
+                <h1 class="landing-title">Bienvenido a <span class="highlight">NutriRoots</span></h1>
+                <p class="landing-subtitle">Comidas saludables, caseras y listas en minutos. Elaboramos viandas congeladas con ingredientes de primera calidad y recetas equilibradas para que disfrutes una alimentación práctica, rica y nutritiva.</p>
+                <p class="landing-prompt">¿Para quién es tu pedido de viandas hoy?</p>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="landing-grid">
                     <!-- Opción Particulares -->
-                    <div class="landing-card" onclick="app.selectLandingOption('particular')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
-                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏠</div>
-                        <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Particulares</h2>
-                        <button class="btn-primary" style="width: 100%; margin-top: 1rem;">Ingresar al Catálogo</button>
+                    <div class="landing-card" onclick="app.selectLandingOption('particular')">
+                        <div class="landing-card-icon particular">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <h2 class="landing-card-title">Clientes Particulares</h2>
+                        <p class="landing-card-desc">Elegí tus platos favoritos, guardalos en el freezer y tené siempre una comida casera lista.</p>
+                        <button class="btn-primary" style="width: 100%;">Ingresar al Catálogo</button>
                     </div>
                     
                     <!-- Opción Corporativos -->
-                    <div class="landing-card" onclick="app.selectLandingOption('corporativo')" style="background: var(--white); border-radius: var(--radius-lg); padding: 3rem 2rem; border: 2px solid transparent; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition);">
-                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🏢</div>
-                        <h2 style="font-size: 1.5rem; color: var(--dark); margin-bottom: 1rem;">Clientes Corporativos</h2>
-                        <button class="btn-secondary" style="width: 100%; margin-top: 1rem;">Acceso Corporativo</button>
+                    <div class="landing-card" onclick="app.selectLandingOption('corporativo')">
+                        <div class="landing-card-icon corporativo">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
+                        </div>
+                        <h2 class="landing-card-title">Clientes Corporativos</h2>
+                        <p class="landing-card-desc">Menús ejecutivos y viandas premium para tu equipo de trabajo. Entrega directa en oficina.</p>
+                        <button class="btn-secondary" style="width: 100%;">Acceso Corporativo</button>
+                    </div>
+                </div>
+                
+                <!-- Feature Badges -->
+                <div class="landing-features">
+                    <div class="landing-feature">
+                        <div class="landing-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                        </div>
+                        <span>Envío gratis +10 viandas</span>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="landing-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+                        </div>
+                        <span>Ingredientes naturales</span>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="landing-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>
+                        </div>
+                        <span>Viandas congeladas</span>
+                    </div>
+                    <div class="landing-feature">
+                        <div class="landing-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25d366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                        </div>
+                        <span>Pedí por WhatsApp</span>
                     </div>
                 </div>
             </div>
@@ -65,7 +102,11 @@
         <section id="view-corporate-login" class="view-section" style="display: none;">
             <div class="login-container" style="max-width: 420px; margin: 6rem auto; padding: 0 1.5rem;">
                 <div class="login-card" style="background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-200); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); text-align: center;">
-                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">💼</div>
+                    <div style="display: flex; justify-content: center; margin-bottom: 1.2rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #2563eb;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                        </div>
+                    </div>
                     <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark);">Acceso Empresas</h2>
                     <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 2rem;">Ingresa para acceder al menú corporativo de tu empresa.</p>
                     
@@ -81,8 +122,9 @@
                             <input type="password" id="corporate-login-password" required placeholder="Ingresa la contraseña" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                         </div>
                         
-                        <div id="corporate-login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none;">
-                            ⚠️ Contraseña incorrecta.
+                        <div id="corporate-login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none; align-items: center; justify-content: center; gap: 0.4rem;">
+                            <svg class="svg-icon" style="width: 16px; height: 16px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span>Contraseña incorrecta.</span>
                         </div>
                         
                         <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Ingresar al Catálogo</button>
@@ -98,7 +140,11 @@
         <section id="view-login" class="view-section" style="display: none;">
             <div class="login-container" style="max-width: 420px; margin: 6rem auto; padding: 0 1.5rem;">
                 <div class="login-card" style="background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray-200); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); text-align: center;">
-                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔐</div>
+                    <div style="display: flex; justify-content: center; margin-bottom: 1.2rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                    </div>
                     <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark);">Acceso Administrativo</h2>
                     <p style="color: var(--gray-600); font-size: 0.9rem; margin-bottom: 2rem;">Ingresa tus credenciales para acceder a la gestión del portal.</p>
                     
@@ -112,8 +158,9 @@
                             <input type="password" id="login-password" required placeholder="Ingresa tu contraseña" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                         </div>
                         
-                        <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none;">
-                            ⚠️ Usuario o contraseña incorrectos.
+                        <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none; align-items: center; justify-content: center; gap: 0.4rem;">
+                            <svg class="svg-icon" style="width: 16px; height: 16px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <span>Usuario o contraseña incorrectos.</span>
                         </div>
                         
                         <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Iniciar Sesión</button>
@@ -131,7 +178,7 @@
             <!-- Hero -->
             <div class="hero">
                 <div class="hero-text">
-                    <span class="hero-badge">✨ Viandas Artesanales y Saludables</span>
+                    <span class="hero-badge"><svg class="svg-icon" style="width: 14px; height: 14px; margin-right: 0.4rem; color: var(--primary);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg> Viandas Artesanales y Saludables</span>
                     <h1 id="client-hero-title">Comida casera, lista para <span>disfrutar</span> en tu mesa.</h1>
                     <p id="client-hero-desc">Cocinamos diariamente con ingredientes frescos y seleccionados. Elegí tus platos semanales y recibilos en la puerta de tu casa.</p>
                     <div class="hero-cta">
@@ -139,7 +186,7 @@
                     </div>
                 </div>
                 <div class="hero-image-container">
-                    <img class="hero-image" id="hero-banner-img" src="logo1.svg" alt="NutriRoots Logo" style="object-fit: contain; mix-blend-mode: multiply; padding: 1rem; box-shadow: none; border-radius: 0; background: transparent; max-height: 250px;" onerror="app.handleHeroLogoError(this)">
+                    <img class="hero-image" id="hero-banner-img" src="logo1.svg" alt="NutriRoots Logo" onerror="app.handleHeroLogoError(this)">
                 </div>
             </div>
 
@@ -154,12 +201,18 @@
             </div>
 
             <!-- Menú Section -->
-            <div class="menú-section" id="menú-section">
+            <div class="menu-section" id="menu-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 class="section-title" style="margin-bottom: 0;">Menú Semanal</h2>
                     <div style="display: flex; gap: 0.3rem; border: 1px solid var(--gray-200); padding: 0.2rem; border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-sm);">
-                        <button id="btn-layout-list" class="filter-btn active" onclick="app.setMenuLayout('list')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;">📋 Vista Lista</button>
-                        <button id="btn-layout-grid" class="filter-btn" onclick="app.setMenuLayout('grid')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;">📱 Vista Tarjeta</button>
+                        <button id="btn-layout-list" class="filter-btn active" onclick="app.setMenuLayout('list')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                            <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                            <span>Vista Lista</span>
+                        </button>
+                        <button id="btn-layout-grid" class="filter-btn" onclick="app.setMenuLayout('grid')" style="padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                            <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>Vista Tarjeta</span>
+                        </button>
                     </div>
                 </div>
                 <div id="menu-container" class="menu-list">
@@ -232,10 +285,11 @@
                             <textarea id="checkout-notes" rows="3" placeholder="Ej. Sin cebolla, alergias, aclaraciones de entrega, etc."></textarea>
                         </div>
                         
-                        <div class="checkout-form-actions">
-                            <button type="button" class="btn-secondary" onclick="app.showView('client')">Volver al Catálogo</button>
-                            <button type="submit" class="btn-primary">
-                                <span>Confirmar Pedido</span> 🚀
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button type="button" class="btn-secondary" onclick="app.showView('client')" style="flex: 1;">Volver al Catálogo</button>
+                            <button type="submit" class="btn-primary" style="flex: 1.5; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                                <span>Confirmar Pedido</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="20 6 9 17 4 12"/></svg>
                             </button>
                         </div>
                     </form>
@@ -265,17 +319,67 @@
             </div>
         </section>
 
-        <!-- VISTA ÉXITO: Pedido Enviado -->
+        <!-- VISTA ÉXITO: Pedido Enviado y Resumen -->
         <section id="view-success" class="view-section" style="display: none;">
-            <div class="success-screen">
-                <div class="success-icon">✓</div>
-                <h2>¡Pedido Registrado con Éxito!</h2>
-                <p>El pedido se ha guardado en nuestro panel de gestión. A la brevedad te llegará la confirmación vía WhatsApp con el resumen de tu pedido y confirmación del mismo.</p>
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
-                    <a id="btn-whatsapp-send" class="btn-primary" href="#" target="_blank" style="display: inline-flex; justify-content: center; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.85rem 1.5rem; font-weight: 700; background: #25D366; color: #fff; border-radius: var(--radius-full); box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);">
-                        💬 Enviar Pedido por WhatsApp
-                    </a>
-                    <button class="btn-secondary" onclick="app.showView('client')">Seguir Comprando</button>
+            <div class="success-container">
+                <div class="success-card">
+                    <!-- Cabecera de Confirmación -->
+                    <div class="success-header">
+                        <div class="success-icon-badge">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h2>¡Pedido Registrado con Éxito!</h2>
+                        <p class="success-subtitle">Tu pedido ha sido recibido correctamente y se encuentra registrado en nuestro sistema.</p>
+                        <div class="success-order-code">
+                            <span>Código de Pedido:</span>
+                            <strong id="success-order-id">#NR-0000</strong>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de Platos Pedidos -->
+                    <div class="success-section-block">
+                        <h3 class="success-block-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="margin-right: 4px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+                            Resumen de tu Pedido
+                        </h3>
+                        <div id="success-order-items" class="success-items-list">
+                            <!-- Los platos se cargarán dinámicamente -->
+                        </div>
+                        
+                        <!-- Totales y Costos -->
+                        <div class="success-totals-box">
+                            <div class="total-row" id="success-subtotal-row">
+                                <span>Subtotal</span>
+                                <span id="success-subtotal">$0</span>
+                            </div>
+                            <div class="total-row" id="success-shipping-row">
+                                <span>Envío</span>
+                                <span id="success-shipping">$0</span>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span>Total a Pagar</span>
+                                <span id="success-total">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Cliente y Entrega -->
+                    <div class="success-section-block">
+                        <h3 class="success-block-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="margin-right: 4px;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Datos de Entrega y Contacto
+                        </h3>
+                        <div id="success-order-details" class="success-details-grid">
+                            <!-- Los datos de contacto y entrega se cargarán dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Acciones / Botones -->
+                    <div class="success-actions">
+                        <button type="button" class="btn-primary" onclick="app.showView('client')" style="width: 100%; padding: 0.9rem 1.5rem; font-size: 1rem;">
+                            Volver al Catálogo / Seguir Comprando
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -289,19 +393,23 @@
                         <h3 id="admin-sidebar-title">Panel de Control</h3>
                         <ul class="sidebar-menu">
                             <li class="sidebar-item active" id="side-orders-btn" onclick="app.switchAdminTab('orders')">
-                                📋 Pedidos
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                <span>Pedidos</span>
                             </li>
                             <li class="sidebar-item" id="side-menu-btn" onclick="app.switchAdminTab('menu')">
-                                🍔 Gestionar Menú
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                                <span>Gestionar Menú</span>
                             </li>
                             <li class="sidebar-item" id="side-companies-btn" onclick="app.switchAdminTab('companies')">
-                                🏢 Empresas Clientes
+                                <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/><line x1="8" y1="6" x2="8.01" y2="6"/><line x1="12" y1="6" x2="12.01" y2="6"/><line x1="16" y1="6" x2="16.01" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/></svg>
+                                <span>Empresas Clientes</span>
                             </li>
                         </ul>
                     </div>
                     <ul class="sidebar-menu" style="margin-top: auto; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                         <li class="sidebar-item" onclick="app.handleLogout()" style="color: #ef4444; font-weight: 600; cursor: pointer;">
-                            🚪 Cerrar Sesión
+                            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ef4444;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            <span>Cerrar Sesión</span>
                         </li>
                     </ul>
                 </aside>
@@ -314,47 +422,58 @@
                         <!-- Stats Grid -->
                         <div class="admin-stats-grid">
                             <div class="stat-card">
-                                <div class="stat-icon">💰</div>
+                                <div class="stat-icon">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
                                 <div class="stat-info">
                                     <h4>Ventas Totales</h4>
                                     <div class="stat-value" id="stat-revenue">$0</div>
                                 </div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-icon green">📈</div>
+                                <div class="stat-icon green">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                </div>
                                 <div class="stat-info">
                                     <h4>Pedidos Totales</h4>
                                     <div class="stat-value" id="stat-orders-count">0</div>
                                 </div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-icon" style="background: #ffedd5; color: #ea580c;">🧑‍🍳</div>
+                                <div class="stat-icon yellow">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Pendientes / Cocina</h4>
+                                    <div class="stat-value" id="stat-pending-count">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #ffedd5; color: #ea580c;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.8V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9.8"/><path d="M4 14h16a2 2 0 0 1 2 2v1a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-1a2 2 0 0 1 2-2z"/><line x1="12" y1="2" x2="12" y2="8"/></svg>
+                                </div>
                                 <div class="stat-info">
                                     <h4>A Cocinar</h4>
                                     <div class="stat-value" id="stat-total-viandas-count">0</div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- Charts Section -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; margin-bottom: 1.5rem;">
-                            <!-- Menu Items Breakdown Card -->
-                            <div class="admin-panel-card" style="margin: 0;">
-                                <div class="panel-header">
-                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark);">Popularidad de Menús</h3>
+                            <div class="stat-card">
+                                <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
                                 </div>
-                                <div id="stat-menu-breakdown" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                                    Cargando...
+                                <div class="stat-info">
+                                    <h4>Viandas por Tipo</h4>
+                                    <div id="stat-viandas-count" style="width: 100%;">Cargando...</div>
                                 </div>
                             </div>
-                            
-                            <!-- Viandas por Tipo Pie Chart -->
-                            <div class="admin-panel-card" style="margin: 0;">
-                                <div class="panel-header">
-                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark);">Viandas por Tipo</h3>
-                                </div>
-                                <div style="padding: 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 250px;">
-                                    <canvas id="stat-viandas-chart" style="max-height: 250px;"></canvas>
-                                </div>
+                        </div>
+                        <!-- Menu Items Breakdown Card -->
+                        <div class="admin-panel-card" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                            <div class="panel-header">
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--dark);">Popularidad de Menús</h3>
+                            </div>
+                            <div id="stat-menu-breakdown" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                                Cargando...
                             </div>
                         </div>
 
@@ -371,7 +490,8 @@
                                         <button class="filter-btn" onclick="app.filterOrders('cancelado', this)">Cancelados</button>
                                     </div>
                                     <button class="btn-primary" onclick="app.exportOrdersToCSV()" style="background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; color: var(--white);">
-                                        📥 Exportar CSV
+                                        <svg class="svg-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        <span>Exportar CSV</span>
                                     </button>
                                 </div>
                             </div>
@@ -496,13 +616,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="menu-category">Categoría *</label>
-                        <input type="text" id="menu-category" list="categories-datalist" required placeholder="Escribe o selecciona..." style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); box-sizing: border-box;">
-                        <datalist id="categories-datalist">
-                            <option value="Clásicos">
-                            <option value="Pastas">
-                            <option value="Saludable">
-                            <option value="Postres">
-                        </datalist>
+                        <select id="menu-category" required>
+                            <option value="Clásicos">Clásicos</option>
+                            <option value="Pastas">Pastas</option>
+                            <option value="Saludable">Saludable</option>
+                            <option value="Postres">Postres</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -543,8 +662,40 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="menu-tag">Etiqueta Especial (Opcional)</label>
-                    <input type="text" id="menu-tag" placeholder="Ej. Más Vendido, Picante, Sin TACC">
+                    <label for="menu-tag">Etiqueta Especial / Número de Menú (Menú 1 al 30) *</label>
+                    <select id="menu-tag" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box; background: var(--white); cursor: pointer;">
+                        <option value="">-- Sin Menú Asignado --</option>
+                        <option value="Menú 1">Menú 1</option>
+                        <option value="Menú 2">Menú 2</option>
+                        <option value="Menú 3">Menú 3</option>
+                        <option value="Menú 4">Menú 4</option>
+                        <option value="Menú 5">Menú 5</option>
+                        <option value="Menú 6">Menú 6</option>
+                        <option value="Menú 7">Menú 7</option>
+                        <option value="Menú 8">Menú 8</option>
+                        <option value="Menú 9">Menú 9</option>
+                        <option value="Menú 10">Menú 10</option>
+                        <option value="Menú 11">Menú 11</option>
+                        <option value="Menú 12">Menú 12</option>
+                        <option value="Menú 13">Menú 13</option>
+                        <option value="Menú 14">Menú 14</option>
+                        <option value="Menú 15">Menú 15</option>
+                        <option value="Menú 16">Menú 16</option>
+                        <option value="Menú 17">Menú 17</option>
+                        <option value="Menú 18">Menú 18</option>
+                        <option value="Menú 19">Menú 19</option>
+                        <option value="Menú 20">Menú 20</option>
+                        <option value="Menú 21">Menú 21</option>
+                        <option value="Menú 22">Menú 22</option>
+                        <option value="Menú 23">Menú 23</option>
+                        <option value="Menú 24">Menú 24</option>
+                        <option value="Menú 25">Menú 25</option>
+                        <option value="Menú 26">Menú 26</option>
+                        <option value="Menú 27">Menú 27</option>
+                        <option value="Menú 28">Menú 28</option>
+                        <option value="Menú 29">Menú 29</option>
+                        <option value="Menú 30">Menú 30</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -575,7 +726,7 @@
 
     <!-- MODAL EDITAR PEDIDO (Admin) -->
     <div class="modal-overlay" id="order-modal" style="display: none;">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto;">
             <h3 class="modal-title">Editar Pedido</h3>
             <form id="order-form" onsubmit="app.handleOrderSubmit(event)">
                 <input type="hidden" id="order-id-field">
@@ -607,15 +758,47 @@
                 
                 <div class="form-group">
                     <label for="order-notes">Notas del Pedido</label>
-                    <textarea id="order-notes" rows="3" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;"></textarea>
+                    <textarea id="order-notes" rows="2" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;"></textarea>
                 </div>
                 
                 <div id="order-particular-details" style="display: none; background: var(--primary-light); border: 1px solid var(--primary-light); border-radius: var(--radius-md); padding: 0.8rem; margin-top: 1rem; font-size: 0.85rem; line-height: 1.4; color: var(--dark);"></div>
                 
+                <!-- Sección Editable de Platos Solicitados -->
                 <div class="form-group" style="margin-top: 1.5rem;">
-                    <label style="font-weight: 700; color: var(--dark); font-size: 0.9rem;">Platos Solicitados</label>
-                    <div id="order-items-list" style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.8rem; margin-top: 0.4rem; max-height: 160px; overflow-y: auto; font-size: 0.88rem; line-height: 1.4; color: var(--dark-muted);">
-                        <!-- Carga dinámica de platos del pedido -->
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                        <label style="font-weight: 700; color: var(--dark); font-size: 0.95rem; margin-bottom: 0;">Platos Solicitados (Editable)</label>
+                        <span style="font-size: 0.78rem; color: var(--dark-muted);">Ajustá cantidades o sumá nuevos platos</span>
+                    </div>
+
+                    <!-- Lista de platos con controles +/- y eliminar -->
+                    <div id="order-items-edit-list" style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.8rem 1rem; max-height: 220px; overflow-y: auto;">
+                        <!-- Se renderiza dinámicamente -->
+                    </div>
+
+                    <!-- Selector para agregar un nuevo plato al pedido -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem; align-items: center;">
+                        <select id="order-add-dish-select" style="flex-grow: 1; padding: 0.65rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); font-size: 0.88rem; background: var(--white); box-sizing: border-box;">
+                            <option value="">-- Seleccionar plato para agregar --</option>
+                        </select>
+                        <button type="button" class="btn-primary" onclick="app.addDishToOrderEdit()" style="padding: 0.65rem 1rem; font-size: 0.88rem; white-space: nowrap;">
+                            + Agregar
+                        </button>
+                    </div>
+
+                    <!-- Recálculo de totales en tiempo real -->
+                    <div id="order-edit-totals-box" style="margin-top: 0.8rem; background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 0.8rem 1rem; font-size: 0.88rem;">
+                        <div style="display: flex; justify-content: space-between; color: var(--dark-muted); margin-bottom: 0.25rem;">
+                            <span>Subtotal Platos:</span>
+                            <strong id="order-edit-subtotal" style="color: var(--dark);">$0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--dark-muted); margin-bottom: 0.25rem;">
+                            <span>Costo de Envío:</span>
+                            <strong id="order-edit-shipping" style="color: var(--dark);">$0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 1rem; font-weight: 800; color: var(--primary); border-top: 1px solid var(--gray-200); padding-top: 0.4rem; margin-top: 0.4rem;">
+                            <span>Nuevo Total del Pedido:</span>
+                            <strong id="order-edit-total">$0</strong>
+                        </div>
                     </div>
                 </div>
                 
@@ -651,21 +834,37 @@
     <!-- FOOTER -->
     <footer>
         <div class="footer-content">
-            <div>
-                <img src="logo1.svg" alt="NutriRoots Logo" style="height: 60px; width: auto; mix-blend-mode: multiply; margin-bottom: 1rem;" onerror="this.style.display='none'">
-                <div class="footer-logo" style="margin-top: 0.5rem;">Nutri<span>Roots</span></div>
+            <div class="footer-brand-section">
+                <img src="logo1.svg" alt="NutriRoots Logo" style="height: 50px; width: auto; border-radius: var(--radius-sm); object-fit: contain; margin-bottom: 0.5rem;" onerror="this.style.display='none'">
+                <div class="footer-logo">Nutri<span>Roots</span></div>
+                <p class="footer-desc">Viandas caseras, saludables y congeladas. Comida lista para disfrutar en minutos con ingredientes de primera calidad.</p>
+                <div class="footer-social">
+                    <a href="https://www.instagram.com/nutrirootsfood/" target="_blank" title="Instagram" class="footer-social-link">
+                        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?phone=5491126365636" target="_blank" title="WhatsApp" class="footer-social-link">
+                        <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.176 8.176 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.44 0-2.86-.38-4.11-1.11l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.25-4.42c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.49-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.12.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.18-.47-.3z"/></svg>
+                    </a>
+                </div>
             </div>
-            <div class="footer-right">
-                <p>📍 CABA y GBA OESTE— consultá tu zona</p>
-                <p>📞 <a href="tel:+5449 1126365636" style="color: inherit;">+54 9 11 26365636</a></p>
-                <p>🕐 PEDIDOS HASTA EL DIA JUEVES 20:00 hs</p>
-                <p>🚚 ENTREGA DOMINGO O LUNES</p>
-                <p style="margin-top: 1rem; color: var(--secondary)">Seguinos en Instagram <a href="https://www.instagram.com/nutrirootsfood/" target="_blank" style="color: inherit; text-decoration: underline;">@nutrirootsfood</a></p>
+            <div class="footer-column">
+                <h4>Contacto</h4>
+                <p class="footer-contact-item"><svg class="svg-icon footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span>CABA y GBA Oeste</span></p>
+                <p class="footer-contact-item"><svg class="svg-icon footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <a href="tel:+5491126365636">+54 9 11 2636-5636</a></p>
+                <p class="footer-contact-item"><svg class="svg-icon footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span>Pedidos hasta Jueves 20:00 hs</span></p>
+                <p class="footer-contact-item"><svg class="svg-icon footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> <span>Entrega Domingo o Lunes</span></p>
+            </div>
+            <div class="footer-column">
+                <h4>Información</h4>
+                <p>Viandas congeladas artesanales</p>
+                <p>Envío gratis +10 viandas</p>
+                <p>Pago en efectivo o transferencia</p>
+                <a href="https://www.instagram.com/nutrirootsfood/" target="_blank">Seguinos en @nutrirootsfood</a>
             </div>
         </div>
         <div class="footer-copyright">
             <span>&copy; 2026 NutriRoots. Todos los derechos reservados.</span>
-            <span>Viandas &bull; Buenos Aires</span>
+            <span>Viandas Saludables &bull; Buenos Aires, Argentina</span>
         </div>
     </footer>
 
@@ -681,11 +880,7 @@
     <!-- LOGIC SCRIPTS -->
     <!-- Firebase SDK (Compat v8 api over v10) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="data.js"></script>
     <script src="app.js"></script>
