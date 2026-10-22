@@ -2146,6 +2146,16 @@ footer::before {
     .checkout-container {
         grid-template-columns: 1fr;
     }
+
+    .zones-hero-title {
+        font-size: 2rem;
+    }
+
+    .zones-free-shipping-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2160,4 +2170,1064 @@ footer::before {
     .hero-text h1 {
         font-size: 1.9rem;
     }
+
+    .zones-hero-title {
+        font-size: 1.7rem;
+    }
+
+    .zones-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .zones-quick-filters {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .navbar {
+        padding: 0.8rem 1rem;
+    }
+
+    .nav-actions {
+        gap: 0.5rem;
+    }
+
+    .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.82rem;
+    }
 }
+
+/* ==========================================
+   ESTILOS DE ZONAS DE ENTREGA Y COSTOS
+   ========================================== */
+.zones-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4.5rem 1.5rem;
+}
+
+.zones-hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.zones-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35rem 1.1rem;
+    border-radius: var(--radius-full);
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 94, 54, 0.18);
+}
+
+.zones-hero-title {
+    font-size: 2.4rem;
+    color: var(--dark);
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    line-height: 1.25;
+}
+
+.zones-hero-title span {
+    color: var(--primary);
+}
+
+.zones-hero-desc {
+    max-width: 680px;
+    margin: 0 auto 1.8rem auto;
+    color: var(--dark-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* Tarjeta Promo Envío Gratis */
+.zones-free-shipping-card {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    border: 1.5px solid #fed7aa;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 840px;
+    margin: 0 auto;
+    text-align: left;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.08);
+}
+
+.zones-free-shipping-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.zones-free-shipping-text h3 {
+    font-size: 1.15rem;
+    color: #9a3412;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+
+.zones-free-shipping-text p {
+    color: #7c2d12;
+    font-size: 0.92rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Tarjeta de Mapa Interactivo de Polígonos de Reparto */
+.zones-map-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    padding: 1.8rem;
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.zones-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.2rem;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.zones-map-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    margin-bottom: 0.35rem;
+    border: 1px solid rgba(255, 94, 54, 0.15);
+}
+
+.zones-map-heading {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+}
+
+.zones-map-subheading {
+    font-size: 0.92rem;
+    color: var(--dark-muted);
+    margin: 0;
+}
+
+/* Toolbar de modos y leyendas del mapa */
+.zones-map-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    background: var(--gray-50);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+.map-view-modes {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.map-mode-btn {
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-300);
+    background: var(--white);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--dark);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: var(--transition);
+}
+
+.map-mode-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.map-mode-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.zones-map-legend-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.legend-pill {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    color: var(--dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.legend-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.pill-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pill-oeste .pill-dot { background: #ff5e36; }
+.pill-caba .pill-dot { background: #f59e0b; }
+.pill-norte .pill-dot { background: #0284c7; }
+.pill-sur .pill-dot { background: #8b5cf6; }
+
+/* ==========================================================================
+   SISTEMA DE ZONAS Y ENVÍOS (MODELO HOMEFOOD.COM.AR/#ENVIOS)
+   ========================================================================== */
+
+.hf-zones-section {
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+}
+
+/* Encabezado e Intro */
+.hf-zones-intro {
+    text-align: center;
+    max-width: 820px;
+    margin: 0 auto 2.5rem auto;
+}
+
+.hf-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-full);
+    margin-bottom: 0.8rem;
+}
+
+.hf-zones-title {
+    font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+    color: var(--dark);
+    font-weight: 800;
+    line-height: 1.18;
+    margin-bottom: 0.8rem;
+}
+
+.hf-zones-lead {
+    font-size: 1.05rem;
+    color: var(--dark-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Banner Destacado Envío Gratis */
+.hf-free-shipping-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #ecfdf5;
+    border: 1.5px solid #a7f3d0;
+    border-radius: var(--radius-lg);
+    padding: 0.9rem 1.4rem;
+    text-align: left;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+}
+
+.hf-free-shipping-badge {
+    background: #059669;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.hf-free-shipping-text {
+    font-size: 0.92rem;
+    color: #065f46;
+    line-height: 1.4;
+}
+
+.hf-free-shipping-text strong {
+    display: block;
+    font-size: 0.98rem;
+    color: #047857;
+}
+
+/* Layout de 2 Columnas: Tarjetas (Izquierda) + Mapa (Derecha) */
+.hf-zones-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 2rem;
+    align-items: start;
+    margin-bottom: 3rem;
+}
+
+@media (max-width: 992px) {
+    .hf-zones-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Columna de Tarjetas de Zonas */
+.hf-zones-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.hf-zone-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    position: relative;
+}
+
+.hf-zone-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.hf-zone-card.is-highlighted {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-premium);
+    background: #fffdfb;
+}
+
+.hf-zone-card__top {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.hf-zone-card__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hf-zone-card__icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-oeste { background: #ecfdf5; color: #10b981; }
+.icon-caba { background: #fff7ed; color: #f97316; }
+.icon-norte { background: #f0f9ff; color: #0284c7; }
+.icon-sur { background: #f5f3ff; color: #8b5cf6; }
+
+.hf-zone-card__header-text {
+    flex-grow: 1;
+}
+
+.hf-zone-card__tags {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.2rem;
+    flex-wrap: wrap;
+}
+
+.hf-pill-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 0.18rem 0.55rem;
+    border-radius: var(--radius-sm);
+}
+
+.tag-kitchen { background: #fee2e2; color: #b91c1c; }
+.tag-caba { background: #ffedd5; color: #c2410c; }
+.tag-norte { background: #e0f2fe; color: #0369a1; }
+.tag-sur { background: #ede9fe; color: #6d28d9; }
+
+.hf-pill-distance {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dark-muted);
+    background: var(--gray-100);
+    padding: 0.18rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.hf-zone-card__name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.hf-zone-card__desc {
+    font-size: 0.92rem;
+    color: var(--dark-muted);
+    line-height: 1.5;
+    margin-bottom: 0.9rem;
+}
+
+.hf-zone-card__pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding: 0.6rem 0.9rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+    border: 1px solid var(--gray-100);
+}
+
+.hf-price-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--dark);
+}
+
+.hf-price-cond {
+    font-size: 0.85rem;
+    color: var(--dark-muted);
+}
+
+.hf-price-cond strong {
+    color: #059669;
+}
+
+/* Accordion Desplegable estilo Homefood (<details> & <summary>) */
+.hf-zone-card__more {
+    margin-bottom: 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    overflow: hidden;
+    transition: background 0.2s ease;
+}
+
+.hf-zone-card__more[open] {
+    background: #fafafa;
+    border-color: var(--gray-300);
+}
+
+.hf-zone-card__more summary {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--dark);
+    cursor: pointer;
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+    user-select: none;
+    transition: color 0.15s ease;
+}
+
+.hf-zone-card__more summary::-webkit-details-marker {
+    display: none;
+}
+
+.hf-zone-card__more summary::after {
+    content: "↓";
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+    transition: transform 0.25s ease;
+}
+
+.hf-zone-card__more[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.hf-zone-card__more summary:hover {
+    color: var(--primary);
+}
+
+.hf-zone-card__more p {
+    font-size: 0.83rem;
+    color: var(--dark-muted);
+    line-height: 1.55;
+    padding: 0.75rem 0.9rem 0.9rem 0.9rem;
+    border-top: 1px dashed var(--gray-200);
+    margin: 0;
+}
+
+/* Chips de localidades individuales */
+.hf-zone-localities {
+    margin: 0.85rem 0;
+    padding: 0.7rem 0.85rem;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+}
+
+.hf-locality-label {
+    display: block;
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--dark-muted);
+    margin-bottom: 0.45rem;
+}
+
+.hf-locality-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.hf-locality-chip {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-full);
+    padding: 0.25rem 0.6rem;
+    font-size: 0.74rem;
+    color: var(--dark);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    transition: all 0.15s ease;
+    font-weight: 500;
+}
+
+.hf-locality-chip:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.hf-locality-chip strong {
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Botones de acción en tarjeta */
+.hf-zone-card__action {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.btn-choose-zone {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.btn-map-focus {
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    color: var(--dark);
+    border-radius: var(--radius-md);
+    padding: 0.7rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.btn-map-focus:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+/* Columna Derecha: Mapa Sticky */
+.hf-zones-map-column {
+    position: relative;
+}
+
+.hf-map-sticky-wrapper {
+    position: sticky;
+    top: 90px;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Barra de Modos y Acciones del Mapa */
+.hf-map-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+.hf-map-mode-toggles {
+    display: flex;
+    gap: 0.3rem;
+    background: var(--gray-100);
+    padding: 0.2rem;
+    border-radius: var(--radius-md);
+}
+
+.hf-map-toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--dark-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition);
+}
+
+.hf-map-toggle-btn.active {
+    background: var(--white);
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.hf-map-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.hf-map-action-link {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dark);
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    padding: 0.4rem 0.65rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.hf-map-action-link:hover {
+    background: var(--white);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Leyenda de Colores */
+.hf-map-legend {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+.legend-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dark);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.legend-tag:hover {
+    transform: translateY(-1px);
+    border-color: var(--gray-300);
+}
+
+.legend-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.circle-oeste { background: #10b981; }
+.circle-caba { background: #f97316; }
+.circle-norte { background: #0284c7; }
+.circle-sur { background: #8b5cf6; }
+
+/* Contenedor del Mapa Leaflet */
+.hf-map-container {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    height: 520px;
+}
+
+#interactive-delivery-map {
+    width: 100%;
+    height: 100%;
+    background: #eef2f6;
+    z-index: 1;
+}
+
+/* Tarjeta Flotante Interactiva de Medición */
+.hf-map-floating-card {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-300);
+    box-shadow: var(--shadow-lg);
+    padding: 0.9rem 1.1rem;
+    width: 275px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.floating-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-100);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--dark);
+}
+
+.floating-card-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--dark-muted);
+    line-height: 1;
+}
+
+.floating-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 0.3rem;
+}
+
+.floating-row span {
+    color: var(--dark-muted);
+}
+
+.floating-row strong {
+    color: var(--dark);
+}
+
+.floating-promo-free {
+    font-size: 0.76rem;
+    color: #059669;
+    font-weight: 700;
+    margin-top: 0.35rem;
+    background: #ecfdf5;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.hf-map-tip {
+    font-size: 0.8rem;
+    color: var(--dark-muted);
+    margin-top: 0.75rem;
+    line-height: 1.45;
+}
+
+/* Tarjetas de Franjas Horarias estilo Homefood (.hf-shipping-costs) */
+.hf-shipping-costs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+}
+
+.hf-cost-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.hf-cost-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.hf-cost-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hf-cost-card__icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.hf-cost-card--morning .hf-cost-card__icon {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.hf-cost-card--evening .hf-cost-card__icon {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.hf-cost-card--corp .hf-cost-card__icon {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.hf-cost-card__content {
+    flex-grow: 1;
+}
+
+.hf-cost-card__label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--dark-muted);
+    margin-bottom: 0.2rem;
+}
+
+.hf-cost-card__amount {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+}
+
+.hf-cost-card__note {
+    display: block;
+    font-size: 0.82rem;
+    color: #059669;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+/* Custom Marker Pin para Cocina Central */
+.kitchen-central-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: #ef4444;
+    color: #ffffff;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.45);
+    border: 2.5px solid #ffffff;
+}
+
+.kitchen-central-marker svg {
+    transform: rotate(45deg);
+    width: 20px;
+    height: 20px;
+}
+
+/* Pulsación visual para la cocina */
+.kitchen-pulse-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+.kitchen-pulse-ring {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.35);
+    animation: pulseKitchen 2s ease-out infinite;
+}
+
+@keyframes pulseKitchen {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Leaflet Popups Estilizados */
+.leaflet-popup-content-wrapper {
+    border-radius: var(--radius-md) !important;
+    font-family: var(--font-sans) !important;
+    padding: 0.4rem !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.leaflet-popup-content h3 {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    color: var(--dark);
+    font-weight: 700;
+}
+
+.leaflet-popup-content p {
+    font-size: 0.82rem;
+    color: var(--dark-muted);
+    margin: 0.15rem 0;
+}
+
+/* Sección Informativa y Preguntas Frecuentes */
+.zones-info-section {
+    margin-bottom: 3.5rem;
+}
+
+.zones-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+.zone-info-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    padding: 1.8rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.zone-info-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.zone-info-card h3 {
+    font-size: 1.1rem;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.zone-info-card p {
+    font-size: 0.88rem;
+    color: var(--dark-muted);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* Banner Inferior */
+.zones-bottom-cta {
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.zones-bottom-cta h2 {
+    font-size: 1.8rem;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.zones-bottom-cta p {
+    color: var(--dark-muted);
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+

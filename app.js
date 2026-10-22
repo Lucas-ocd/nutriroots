@@ -27,17 +27,190 @@ const APP_ICONS = {
     checkCircle: `<svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; vertical-align: -2px; margin-right: 0.3rem; color: var(--green-success);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
 };
 
+// Configuración de Zonas de Entrega y Localidades en Buenos Aires para NutriRoots
+const DELIVERY_ZONES_CONFIG = [
+    // --- LOCALIDADES INDIVIDUALES DE GBA ZONA OESTE ---
+    {
+        id: "ituzaingo",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Ituzaingó (Sede Central Zárate 3171)",
+        shortName: "Ituzaingó",
+        price: 2500,
+        badge: "Cocina Central · Tarifa Vecina",
+        schedule: "Lunes a Viernes (10:00 a 14:00 / 18:00 a 20:30 hs)",
+        description: "Envío preferencial y más rápido desde nuestra sede en Zárate 3171 hacia todo Ituzaingó Norte y Sur, Parque Leloir y Villa Udaondo.",
+        neighborhoods: ["Ituzaingó Centro", "Parque Leloir", "Villa Udaondo", "Ituzaingó Sur", "San Alberto"]
+    },
+    {
+        id: "castelar",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Castelar",
+        shortName: "Castelar",
+        price: 3000,
+        badge: "Zona Inmediata",
+        schedule: "Lunes a Viernes (10:00 a 14:00 / 18:00 a 20:30 hs)",
+        description: "Reparto diario ágil en Castelar Norte, Castelar Centro y Castelar Sur.",
+        neighborhoods: ["Castelar Norte", "Castelar Centro", "Castelar Sur", "Barrio Seré"]
+    },
+    {
+        id: "moron-haedo",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Morón & Haedo",
+        shortName: "Morón / Haedo",
+        price: 3500,
+        badge: "Zona Oeste Centro",
+        schedule: "Lunes, Miércoles y Viernes (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Entregas programadas en Morón Centro, Morón Sur, Haedo Norte y Haedo Sur con cadena de frío.",
+        neighborhoods: ["Morón Centro", "Morón Sur", "Haedo", "Villa Sarmiento", "El Palomar Sur"]
+    },
+    {
+        id: "hurlingham",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Hurlingham & Villa Tesei",
+        shortName: "Hurlingham",
+        price: 3500,
+        badge: "Zona Oeste Norte",
+        schedule: "Martes y Jueves (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Despacho directo hacia Hurlingham, Villa Tesei y William Morris.",
+        neighborhoods: ["Hurlingham Centro", "Villa Tesei", "William Morris"]
+    },
+    {
+        id: "tres-de-febrero",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Tres de Febrero (Caseros / El Palomar)",
+        shortName: "3 de Febrero",
+        price: 4000,
+        badge: "Zona Oeste Noreste",
+        schedule: "Martes y Jueves (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Entregas en Caseros, Ciudad Jardín, Santos Lugares, El Palomar y Sáenz Peña.",
+        neighborhoods: ["Caseros", "Ciudad Jardín Lomas del Palomar", "El Palomar", "Santos Lugares", "Sáenz Peña", "Martín Coronado"]
+    },
+    {
+        id: "la-matanza-norte",
+        category: "gba-oeste",
+        parentGroup: "gba-oeste",
+        name: "Ramos Mejía & San Justo",
+        shortName: "Ramos / San Justo",
+        price: 4000,
+        badge: "Zona Oeste Sur",
+        schedule: "Miércoles y Viernes (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Cobertura completa en Ramos Mejía, San Justo, Villa Luzuriaga y Lomas del Mirador.",
+        neighborhoods: ["Ramos Mejía", "San Justo", "Villa Luzuriaga", "Lomas del Mirador", "Ciudadela"]
+    },
+
+    // --- SECTORES DE CABA ---
+    {
+        id: "caba-oeste",
+        category: "caba",
+        parentGroup: "caba",
+        name: "CABA Oeste (Devoto, Flores, Liniers)",
+        shortName: "CABA Oeste",
+        price: 7000,
+        badge: "Acceso Rápido por Autopista",
+        schedule: "Domingo (18:00 a 21:00 hs) y Lunes (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Acceso inmediato por Autopista del Oeste hacia barrios del oeste de la Capital Federal.",
+        neighborhoods: ["Villa Devoto", "Villa del Parque", "Villa Real", "Versalles", "Liniers", "Mataderos", "Flores", "Floresta", "Monte Castro", "Vélez Sársfield", "Parque Avellaneda"]
+    },
+    {
+        id: "caba-norte",
+        category: "caba",
+        parentGroup: "caba",
+        name: "CABA Norte (Palermo, Belgrano, Núñez)",
+        shortName: "CABA Norte",
+        price: 7500,
+        badge: "Corredor Norte",
+        schedule: "Domingo (18:00 a 21:00 hs) y Lunes (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Entregas programadas en los barrios residenciales del norte de CABA.",
+        neighborhoods: ["Palermo", "Belgrano", "Núñez", "Colegiales", "Saavedra", "Coghlan", "Chacarita", "Villa Urquiza", "Villa Pueyrredón"]
+    },
+    {
+        id: "caba-centro",
+        category: "caba",
+        parentGroup: "caba",
+        name: "CABA Centro & Este (Caballito, Recoleta, Retiro)",
+        shortName: "CABA Centro",
+        price: 8000,
+        badge: "Centro & Puerto",
+        schedule: "Domingo (18:00 a 21:00 hs) y Lunes (10:00 a 14:00 / 18:00 a 21:00 hs)",
+        description: "Despacho central hacia Caballito, Almagro, Recoleta, Retiro, San Nicolás y Puerto Madero.",
+        neighborhoods: ["Caballito", "Almagro", "Recoleta", "Retiro", "Puerto Madero", "San Nicolás", "Monserrat", "San Telmo", "Balvanera", "San Cristóbal", "Boedo"]
+    },
+
+    // --- MACRO-ZONAS (Compatibilidad histórica y vistas generales) ---
+    {
+        id: "caba",
+        category: "caba",
+        name: "CABA (Capital Federal Completa)",
+        shortName: "CABA Total",
+        price: 8000,
+        badge: "Cobertura Completa",
+        schedule: "Domingo (18:00 a 21:00 hs) y Lunes (10:00 a 13:00 / 18:00 a 21:00 hs)",
+        description: "Reparto en los 48 barrios de la Capital Federal. Entregas coordinadas en franjas horarias cómodas.",
+        neighborhoods: [
+            "Agronomía", "Almagro", "Balvanera", "Barracas", "Belgrano", "Boedo", "Caballito", 
+            "Chacarita", "Coghlan", "Colegiales", "Constitución", "Flores", "Floresta", "La Boca", 
+            "Liniers", "Mataderos", "Monte Castro", "Montserrat", "Nueva Pompeya", "Núñez", 
+            "Palermo", "Parque Avellaneda", "Parque Chacabuco", "Parque Chas", "Parque Patricios", 
+            "Paternal", "Puerto Madero", "Recoleta", "Retiro", "Saavedra", "San Cristóbal", 
+            "San Nicolás", "San Telmo", "Vélez Sársfield", "Versalles", "Villa Crespo", 
+            "Villa del Parque", "Villa Devoto", "Villa General Mitre", "Villa Lugano", 
+            "Villa Luro", "Villa Ortúzar", "Villa Pueyrredón", "Villa Real", "Villa Riachuelo", 
+            "Villa Santa Rita", "Villa Soldati", "Villa Urquiza"
+        ]
+    },
+    {
+        id: "gba-oeste",
+        category: "gba-oeste",
+        name: "GBA Zona Oeste (General)",
+        shortName: "Zona Oeste Total",
+        price: 4000,
+        badge: "Nuestra Cocina Central (Ituzaingó)",
+        schedule: "Domingo (18:00 a 21:00 hs) y Lunes (10:00 a 14:00 hs)",
+        description: "Elaboración y despacho local desde nuestra sede en Zárate 3171, Ituzaingó, hacia todos los partidos del oeste.",
+        neighborhoods: [
+            "Ituzaingó (Zárate 3171 - Cocina Central)", "Parque Leloir", "Villa Udaondo",
+            "Castelar", "Morón", "Haedo", "El Palomar", "Villa Sarmiento",
+            "Ramos Mejía", "San Justo", "Ciudadela", "Villa Luzuriaga", "Lomas del Mirador",
+            "Hurlingham", "Villa Tesei", "William Morris",
+            "Caseros", "Ciudad Jardín", "Santos Lugares", "Sáenz Peña", "Martín Coronado"
+        ]
+    },
+    {
+        id: "corporativo",
+        category: "corporativo",
+        name: "Clientes Corporativos / Empresas",
+        shortName: "Empresas",
+        price: 0,
+        badge: "100% Bonificado",
+        schedule: "Lunes antes de las 12:00 hs (o según convenio coordinado)",
+        description: "Entregas directas en oficinas y sedes de empresas clientes en CABA y Gran Buenos Aires.",
+        neighborhoods: [
+            "Entregas programadas en recepción o comedor corporativo.",
+            "Viandas empaquetadas e identificadas por colaborador.",
+            "Costo de entrega 100% bonificado en todos los pedidos."
+        ]
+    }
+];
+
 class NutriRootsApp {
     constructor() {
         // Datos de configuración
         this.WHATSAPP_NUMBER = "5491155555555"; // Número de WhatsApp del negocio (formato internacional sin +)
-        this.SHIPPING_COST = 4500; // Costo fijo de envío
+        this.SHIPPING_COST = 4000; // Costo base de envío (Zona Oeste)
 
         // Estado de la aplicación
         this.menu = [];
         this.orders = [];
         this.cart = [];
         this.selectedCategory = "Todas";
+        this.selectedDeliveryZone = "gba-oeste"; // Zona Oeste (Ituzaingó) por defecto
+        this.currentZoneFilter = "todas"; // Filtro de vista de zonas
+        this.zoneSearchQuery = ""; // Búsqueda de barrios
         this.currentView = "landing"; // Vista de selección de cocina por defecto
         this.currentAdminTab = "orders";
         this.currentOrderFilter = "all";
@@ -48,6 +221,15 @@ class NutriRootsApp {
         this.companies = []; // Lista de empresas clientes autorizadas (solo corporativo)
         this.catalogType = "particular"; // Catálogo de viandas activo ('particular' o 'corporativo')
         this.lastOrder = null; // Último pedido registrado para mostrar resumen en pantalla de éxito
+
+        // Estado del Mapa Interactivo y Coordenadas Zárate 3171, Ituzaingó
+        this.deliveryMap = null;
+        this.zoneLayers = {};
+        this.radiusLayers = [];
+        this.mapDisplayMode = "polygons";
+        this.kitchenCoords = [-34.64016, -58.68501]; // Zárate 3171, Ituzaingó
+        this.clickedMapLocation = null;
+        this.clickMarker = null;
 
         // Inicializar
         document.addEventListener("DOMContentLoaded", () => this.init());
@@ -95,6 +277,8 @@ class NutriRootsApp {
             dateInput.min = today;
             dateInput.value = today;
         }
+
+        // Vista de zonas lista en el DOM según modelo Homefood
     }
 
     // --- MANEJO DE PERSISTENCIA ---
@@ -104,23 +288,26 @@ class NutriRootsApp {
             const ordersDoc = await db.collection("nutriroots_data").doc("orders").get();
             const companiesDoc = await db.collection("nutriroots_data").doc("companies").get();
 
-            if (menuDoc.exists) {
+            if (menuDoc.exists && menuDoc.data() && Array.isArray(menuDoc.data().data)) {
                 this.menu = menuDoc.data().data;
                 this.migrateMenuCategories();
             } else {
+                // Si en Firebase no existe el documento, usamos localStorage solo como lectura local
                 const localMenu = localStorage.getItem("nr_menu_unified_v2");
                 if (localMenu) {
-                    this.menu = JSON.parse(localMenu);
-                    this.migrateMenuCategories();
+                    try {
+                        this.menu = JSON.parse(localMenu);
+                        this.migrateMenuCategories();
+                    } catch (e) {
+                        this.menu = [];
+                    }
                 } else {
-                    const retail = INITIAL_MENU_RETAIL.map(item => ({ ...item, type: "particular" }));
-                    const corp = INITIAL_MENU_CORP.map(item => ({ ...item, type: "corporativo" }));
-                    this.menu = [...retail, ...corp];
+                    this.menu = [];
                 }
-                this.saveMenuToLocalStorage();
+                // IMPORTANTE: Jamás guardar automáticamente en Firebase en el arranque para no pisar la nube.
             }
 
-            // Nueva colección para documentos individuales
+            // Colección para órdenes individuales
             const ordersSnapshot = await db.collection("orders").get();
 
             if (!ordersSnapshot.empty) {
@@ -135,14 +322,18 @@ class NutriRootsApp {
                 this.orders = [];
             }
 
-            if (companiesDoc.exists) {
+            if (companiesDoc.exists && companiesDoc.data() && Array.isArray(companiesDoc.data().data)) {
                 const parsed = companiesDoc.data().data;
                 this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
             } else {
                 const localCompanies = localStorage.getItem("nr_companies_unified_v2");
                 if (localCompanies) {
-                    const parsed = JSON.parse(localCompanies);
-                    this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+                    try {
+                        const parsed = JSON.parse(localCompanies);
+                        this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
+                    } catch (e) {
+                        this.companies = [];
+                    }
                 } else {
                     this.companies = [
                         { name: "TechCorp", password: "corp123" },
@@ -150,13 +341,12 @@ class NutriRootsApp {
                         { name: "Banco Galicia", password: "corp123" }
                     ];
                 }
-                this.saveCompaniesToLocalStorage();
             }
 
             console.log("Datos cargados correctamente desde Firebase.");
         } catch (error) {
-            console.error("Error cargando Firebase, usando LocalStorage o menú por defecto:", error);
-            // Fallback: intentar recuperar desde LocalStorage
+            console.error("Error cargando Firebase, usando LocalStorage de respaldo:", error);
+            // Fallback: intentar recuperar desde LocalStorage sin escribir nunca a Firebase
             const localMenu = localStorage.getItem("nr_menu_unified_v2");
             if (localMenu) {
                 try {
@@ -164,7 +354,10 @@ class NutriRootsApp {
                     this.migrateMenuCategories();
                 } catch (e) {
                     console.error("Error parseando menú local:", e);
+                    this.menu = [];
                 }
+            } else {
+                this.menu = [];
             }
             const localOrders = localStorage.getItem("nr_orders_unified_v2");
             if (localOrders) {
@@ -172,7 +365,10 @@ class NutriRootsApp {
                     this.orders = JSON.parse(localOrders);
                 } catch (e) {
                     console.error("Error parseando pedidos locales:", e);
+                    this.orders = [];
                 }
+            } else {
+                this.orders = [];
             }
             const localCompanies = localStorage.getItem("nr_companies_unified_v2");
             if (localCompanies) {
@@ -181,30 +377,22 @@ class NutriRootsApp {
                     this.companies = parsed.map(c => typeof c === 'string' ? { name: c, password: 'corp123' } : c);
                 } catch (e) {
                     console.error("Error parseando empresas locales:", e);
+                    this.companies = [];
                 }
+            } else {
+                this.companies = [];
             }
         }
 
-        // GARANTÍA DE DISPONIBILIDAD: Si por error de Firebase o navegador nuevo la lista quedó vacía,
-        // restauramos automáticamente las viandas definidas en data.js para que la web nunca quede en blanco.
-        if (!this.menu || this.menu.length === 0) {
-            const retail = (typeof INITIAL_MENU_RETAIL !== 'undefined' ? INITIAL_MENU_RETAIL : []).map(item => ({ ...item, type: "particular" }));
-            const corp = (typeof INITIAL_MENU_CORP !== 'undefined' ? INITIAL_MENU_CORP : []).map(item => ({ ...item, type: "corporativo" }));
-            this.menu = [...retail, ...corp];
-            try {
-                localStorage.setItem("nr_menu_unified_v2", JSON.stringify(this.menu));
-            } catch (e) {}
+        // Blindaje final: garantizar que sean arrays válidos sin reinyectar platos por defecto
+        if (!Array.isArray(this.menu)) {
+            this.menu = [];
         }
-
-        if (!this.companies || this.companies.length === 0) {
-            this.companies = [
-                { name: "TechCorp", password: "corp123" },
-                { name: "Estudio Contable", password: "corp123" },
-                { name: "Banco Galicia", password: "corp123" }
-            ];
-            try {
-                localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
-            } catch (e) {}
+        if (!Array.isArray(this.orders)) {
+            this.orders = [];
+        }
+        if (!Array.isArray(this.companies)) {
+            this.companies = [];
         }
     }
 
@@ -214,8 +402,7 @@ class NutriRootsApp {
     }
 
     saveOrdersToLocalStorage() {
-        // Ya NO guardamos el array gigante en Firebase para evitar race conditions.
-        // Solo mantenemos un caché local por si falla internet.
+        // Mantenemos un caché local por si falla internet
         localStorage.setItem("nr_orders_unified_v2", JSON.stringify(this.orders));
     }
 
@@ -225,29 +412,24 @@ class NutriRootsApp {
     }
 
     migrateMenuCategories() {
-        const defaults = [...INITIAL_MENU_RETAIL, ...INITIAL_MENU_CORP];
-        const defaultMap = new Map(defaults.map(item => [item.id, item.category]));
-        let changed = false;
-
+        if (!Array.isArray(this.menu)) return;
         this.menu = this.menu.map(item => {
             if (!item.category || item.category.trim() === "") {
-                changed = true;
-                return { ...item, category: defaultMap.get(item.id) || "Clásicas" };
+                return { ...item, category: "Clásicas" };
             }
             if (item.category === "Tartas y Pasteles") {
-                changed = true;
                 return { ...item, category: "Tartas" };
             }
             if (item.category === "Clásicos") {
-                changed = true;
                 return { ...item, category: "Clásicas" };
             }
             return item;
         });
 
-        if (changed) {
-            this.saveMenuToLocalStorage();
-        }
+        // Solo se guarda localmente en el navegador, jamás escribe en Firebase en el arranque
+        try {
+            localStorage.setItem("nr_menu_unified_v2", JSON.stringify(this.menu));
+        } catch (e) {}
     }
 
     getMenuDayClass(tag) {
@@ -259,6 +441,7 @@ class NutriRootsApp {
     updateNavVisibility(viewName) {
         const cartToggle = document.getElementById("btn-cart-toggle");
         const navClientLink = document.getElementById("nav-client-link");
+        const navZonesLink = document.getElementById("nav-zones-link");
         const navAdminLink = document.getElementById("nav-admin-link");
 
         const catalogViews = ["client", "checkout"];
@@ -269,6 +452,9 @@ class NutriRootsApp {
         }
         if (navClientLink) {
             navClientLink.style.display = viewName === "landing" ? "none" : "";
+        }
+        if (navZonesLink) {
+            navZonesLink.style.display = ""; // Visible siempre para fácil consulta
         }
         if (navAdminLink) {
             navAdminLink.style.display = "";
@@ -297,6 +483,622 @@ class NutriRootsApp {
 
     handleCatalogLinkClick() {
         this.showView("client");
+    }
+
+    handleZonesLinkClick() {
+        this.showView("zones");
+    }
+
+    // --- GESTIÓN Y RENDERIZADO DEL MAPA INTERACTIVO Y POLÍGONOS (MODELO HOMEFOOD) ---
+    initDeliveryMap() {
+        const mapContainer = document.getElementById("interactive-delivery-map");
+        if (!mapContainer || typeof L === "undefined") return;
+
+        // Si el mapa ya fue creado, reajustamos dimensiones y retornamos
+        if (this.deliveryMap) {
+            setTimeout(() => {
+                if (this.deliveryMap) {
+                    this.deliveryMap.invalidateSize();
+                }
+            }, 200);
+            return;
+        }
+
+        try {
+            // Inicializar Leaflet centrado en Zárate 3171, Ituzaingó
+            this.deliveryMap = L.map("interactive-delivery-map", {
+                center: this.kitchenCoords, // [-34.64016, -58.68501]
+                zoom: 11,
+                minZoom: 9,
+                maxZoom: 17,
+                zoomControl: true,
+                scrollWheelZoom: false
+            });
+
+            // Capa de mosaicos OpenStreetMap estándar (100% libre, sin marca de agua ni clave API)
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> colaboradores',
+                maxZoom: 19
+            }).addTo(this.deliveryMap);
+
+            // Marcador distintivo de la Cocina Central en Zárate 3171, Ituzaingó
+            const kitchenIcon = L.divIcon({
+                className: "custom-kitchen-leaflet-icon",
+                html: `
+                    <div class="kitchen-pulse-wrapper">
+                        <div class="kitchen-pulse-ring"></div>
+                        <div class="kitchen-central-marker" title="Zárate 3171, Ituzaingó">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                    </div>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 36],
+                popupAnchor: [0, -36]
+            });
+
+            const kitchenMarker = L.marker(this.kitchenCoords, { icon: kitchenIcon }).addTo(this.deliveryMap);
+            kitchenMarker.bindPopup(`
+                <div style="font-family: var(--font-sans); padding: 0.2rem; min-width: 220px;">
+                    <div style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem;">
+                        <span style="font-size: 1.1rem;">🏠</span>
+                        <strong style="color: #ef4444; font-size: 0.96rem;">Cocina Central NutriRoots</strong>
+                    </div>
+                    <p style="margin: 0.2rem 0; font-size: 0.85rem; color: #374151; line-height: 1.4;">
+                        <strong>📍 Zárate 3171, Ituzaingó</strong><br>
+                        Sede de elaboración y punto de partida de todos los envíos con cadena de frío garantizada.
+                    </p>
+                    <div style="margin-top: 0.5rem; font-size: 0.78rem; color: #059669; font-weight: 700;">
+                        ★ Envíos gratis a partir de 10 viandas
+                    </div>
+                </div>
+            `);
+
+            // Configurar polígonos por zona geográfica
+            this.setupMapPolygons();
+
+            // Configurar radios concéntricos de distancia
+            this.setupMapRadiusCircles();
+
+            // Evento al hacer clic en cualquier calle o punto del mapa
+            this.deliveryMap.on("click", (e) => {
+                this.handleMapClick(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Invalidate size diferido para asegurar renderizado perfecto cuando la pestaña se hace visible
+            setTimeout(() => {
+                if (this.deliveryMap) {
+                    this.deliveryMap.invalidateSize();
+                }
+            }, 300);
+
+        } catch (error) {
+            console.error("Error al inicializar el mapa de Leaflet:", error);
+        }
+    }
+
+    setupMapPolygons() {
+        if (!this.deliveryMap) return;
+
+        // Coordenadas geográficas continuas y precisas por localidad del Área Metropolitana de Buenos Aires
+        const zonePolygonCoords = {
+            // --- GBA ZONA OESTE ---
+            "ituzaingo": [
+                [-34.612, -58.706], // Parque Leloir / Martín Fierro y Buen Ayre
+                [-34.606, -58.675], // Reconquista y límite Hurlingham
+                [-34.629, -58.658], // Acceso Oeste y Av. Santa Rosa
+                [-34.656, -58.665], // Santa Rosa y Blas Parera
+                [-34.673, -58.688], // Límite Merlo / Ituzaingó Sur
+                [-34.658, -58.718], // San Antonio de Padua límite
+                [-34.630, -58.720], // Límite Merlo Norte
+                [-34.612, -58.706]  // Cierre en Parque Leloir
+            ],
+            "castelar": [
+                [-34.629, -58.658], // Santa Rosa y Acceso Oeste
+                [-34.627, -58.630], // Acceso Oeste y Vergara
+                [-34.650, -58.632], // Morón centro límite
+                [-34.685, -58.640], // Base Aérea Morón / Castelar Sur
+                [-34.688, -58.670], // Límite Ituzaingó Sur
+                [-34.673, -58.688],
+                [-34.656, -58.665],
+                [-34.629, -58.658]
+            ],
+            "moron-haedo": [
+                [-34.627, -58.630], // Acceso Oeste y Vergara
+                [-34.628, -58.588], // Acceso Oeste y Gaona / Dolores Prats / Haedo
+                [-34.650, -58.572], // Haedo límite Ramos Mejía
+                [-34.670, -58.595], // Morón Sur límite San Justo
+                [-34.685, -58.640], // Base aérea Morón
+                [-34.650, -58.632],
+                [-34.627, -58.630]
+            ],
+            "hurlingham": [
+                [-34.575, -58.650], // Río Reconquista / Camino del Buen Ayre
+                [-34.570, -58.615], // Combate de Pavón / límite Tres de Febrero
+                [-34.615, -58.610], // Vergara y Acceso Oeste
+                [-34.627, -58.630], // Acceso Oeste límite Castelar
+                [-34.629, -58.658], // Santa Rosa
+                [-34.606, -58.675], // Límite Ituzaingó
+                [-34.575, -58.650]
+            ],
+            "tres-de-febrero": [
+                [-34.570, -58.615],
+                [-34.575, -58.560], // Av. Márquez / San Martín
+                [-34.598, -58.521], // General Paz y Av. San Martín
+                [-34.628, -58.530], // General Paz y Acceso Oeste
+                [-34.628, -58.588], // Acceso Oeste y Haedo
+                [-34.615, -58.610], // Vergara
+                [-34.570, -58.615]
+            ],
+            "la-matanza-norte": [
+                [-34.628, -58.530], // General Paz y Acceso Oeste
+                [-34.646, -58.528], // General Paz y Rivadavia (Liniers)
+                [-34.671, -58.504], // General Paz y Mataderos
+                [-34.695, -58.515], // San Justo Sur
+                [-34.690, -58.565], // San Justo / Camino de Cintura
+                [-34.670, -58.595], // Límite Morón
+                [-34.650, -58.572], // Límite Haedo
+                [-34.628, -58.588],
+                [-34.628, -58.530]
+            ],
+
+            // --- CABA SECTORES ---
+            "caba-oeste": [
+                [-34.550, -58.483], // Balbín y Gral Paz
+                [-34.580, -58.455], // Chacarita / Colegiales
+                [-34.620, -58.445], // Caballito / Flores
+                [-34.630, -58.400], // Constitución límite
+                [-34.646, -58.374], // Riachuelo / Pte Pueyrredón
+                [-34.664, -58.419], // Riachuelo / Pte Alsina
+                [-34.693, -58.455], // Pte La Noria
+                [-34.685, -58.475], // Dellepiane y Gral Paz
+                [-34.671, -58.504], // Gral Paz y Mataderos
+                [-34.646, -58.528], // Gral Paz y Liniers
+                [-34.628, -58.530], // Gral Paz y Acceso Oeste
+                [-34.598, -58.521], // Gral Paz y San Martín
+                [-34.575, -58.508], // Gral Paz y Constituyentes
+                [-34.550, -58.483]
+            ],
+            "caba-norte": [
+                [-34.534, -58.465], // General Paz y Río de la Plata
+                [-34.545, -58.442], // Costanera Norte
+                [-34.568, -58.400], // Palermo / Recoleta límite
+                [-34.588, -58.420], // Córdoba y Scalabrini Ortiz
+                [-34.580, -58.455], // Chacarita / Colegiales
+                [-34.550, -58.483], // General Paz y Balbín
+                [-34.538, -58.473], // Puente Saavedra
+                [-34.534, -58.465]
+            ],
+            "caba-centro": [
+                [-34.568, -58.400], // Recoleta
+                [-34.583, -58.373], // Retiro
+                [-34.605, -58.358], // Puerto Madero
+                [-34.636, -58.353], // La Boca
+                [-34.630, -58.400], // Constitución / San Cristóbal
+                [-34.620, -58.445], // Caballito
+                [-34.588, -58.420], // Córdoba
+                [-34.568, -58.400]
+            ]
+        };
+
+        this.zoneStyles = {
+            "ituzaingo": { color: "#10b981", fillColor: "#10b981", fillOpacity: 0.35, weight: 2.5, name: "Ituzaingó (Sede Central Zárate 3171)", price: "$2.500", dist: "0 a 4 km", days: "Lunes a Viernes", parentGroup: "gba-oeste" },
+            "castelar": { color: "#059669", fillColor: "#059669", fillOpacity: 0.32, weight: 2.5, name: "Castelar", price: "$3.000", dist: "3 a 6 km", days: "Lunes a Viernes", parentGroup: "gba-oeste" },
+            "moron-haedo": { color: "#0d9488", fillColor: "#0d9488", fillOpacity: 0.32, weight: 2.5, name: "Morón & Haedo", price: "$3.500", dist: "5 a 9 km", days: "Lunes, Miércoles y Viernes", parentGroup: "gba-oeste" },
+            "hurlingham": { color: "#0284c7", fillColor: "#0284c7", fillOpacity: 0.32, weight: 2.5, name: "Hurlingham & Villa Tesei", price: "$3.500", dist: "4 a 8 km", days: "Martes y Jueves", parentGroup: "gba-oeste" },
+            "tres-de-febrero": { color: "#6366f1", fillColor: "#6366f1", fillOpacity: 0.32, weight: 2.5, name: "Tres de Febrero (Caseros / El Palomar)", price: "$4.000", dist: "8 a 13 km", days: "Martes y Jueves", parentGroup: "gba-oeste" },
+            "la-matanza-norte": { color: "#8b5cf6", fillColor: "#8b5cf6", fillOpacity: 0.32, weight: 2.5, name: "Ramos Mejía & San Justo", price: "$4.000", dist: "7 a 12 km", days: "Miércoles y Viernes", parentGroup: "gba-oeste" },
+            "caba-oeste": { color: "#ea580c", fillColor: "#ea580c", fillOpacity: 0.32, weight: 2.5, name: "CABA Oeste (Devoto, Flores, Liniers)", price: "$7.000", dist: "12 a 16 km", days: "Domingo y Lunes", parentGroup: "caba" },
+            "caba-norte": { color: "#f59e0b", fillColor: "#f59e0b", fillOpacity: 0.32, weight: 2.5, name: "CABA Norte (Palermo, Belgrano, Núñez)", price: "$7.500", dist: "15 a 20 km", days: "Domingo y Lunes", parentGroup: "caba" },
+            "caba-centro": { color: "#e11d48", fillColor: "#e11d48", fillOpacity: 0.32, weight: 2.5, name: "CABA Centro (Caballito, Recoleta, Retiro)", price: "$8.000", dist: "17 a 23 km", days: "Domingo y Lunes", parentGroup: "caba" }
+        };
+
+        this.zoneLayers = {};
+
+        Object.keys(zonePolygonCoords).forEach(zoneId => {
+            const coords = zonePolygonCoords[zoneId];
+            const meta = this.zoneStyles[zoneId];
+
+            const polygon = L.polygon(coords, {
+                color: meta.color,
+                fillColor: meta.fillColor,
+                fillOpacity: meta.fillOpacity,
+                weight: meta.weight,
+                className: `leaflet-zone-polygon polygon-${zoneId}`
+            }).addTo(this.deliveryMap);
+
+            polygon.bindPopup(`
+                <div style="font-family: var(--font-sans); padding: 0.25rem; min-width: 220px;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem;">
+                        <span style="display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: ${meta.color}; flex-shrink: 0;"></span>
+                        <strong style="color: var(--dark); font-size: 0.95rem; line-height: 1.2;">${meta.name}</strong>
+                    </div>
+                    <p style="margin: 0.3rem 0; font-size: 0.84rem; color: #4b5563; line-height: 1.45;">
+                        <strong>Distancia a cocina:</strong> ${meta.dist}<br>
+                        <strong>Días de entrega:</strong> ${meta.days}<br>
+                        <strong>Tarifa de envío:</strong> <span style="font-weight:700; color:var(--dark);">${meta.price}</span>
+                    </p>
+                    <div style="margin-top: 0.4rem; font-size: 0.78rem; color: #059669; font-weight: 700;">
+                        ★ ¡Envío GRATIS con 10 o más viandas!
+                    </div>
+                    <button type="button" class="btn-primary" style="margin-top: 0.6rem; width: 100%; padding: 0.45rem; font-size: 0.82rem;" onclick="app.selectZoneForOrder('${zoneId}')">
+                        Seleccionar esta Localidad
+                    </button>
+                </div>
+            `);
+
+            // Interacción Hover
+            polygon.on("mouseover", () => {
+                polygon.setStyle({
+                    weight: 4,
+                    fillOpacity: 0.52
+                });
+                const card = document.getElementById(`zone-card-${meta.parentGroup}`);
+                if (card) card.classList.add("is-highlighted");
+            });
+
+            polygon.on("mouseout", () => {
+                polygon.setStyle({
+                    weight: meta.weight,
+                    fillOpacity: meta.fillOpacity
+                });
+                const card = document.getElementById(`zone-card-${meta.parentGroup}`);
+                if (card) card.classList.remove("is-highlighted");
+            });
+
+            // Al hacer clic en el polígono, resalta la tarjeta y abre popup
+            polygon.on("click", () => {
+                polygon.openPopup();
+                const card = document.getElementById(`zone-card-${meta.parentGroup}`);
+                if (card) {
+                    document.querySelectorAll(".hf-zone-card").forEach(c => c.classList.remove("is-highlighted"));
+                    card.classList.add("is-highlighted");
+                }
+            });
+
+            this.zoneLayers[zoneId] = polygon;
+        });
+    }
+
+    setupMapRadiusCircles() {
+        if (!this.deliveryMap) return;
+
+        this.radiusLayers = [];
+
+        // Radios concéntricos desde Zárate 3171, Ituzaingó
+        const radii = [
+            { km: 5, color: "#10b981", label: "Radio 5 km · Ituzaingó y Castelar ($2.500 / $3.000)" },
+            { km: 10, color: "#0d9488", label: "Radio 10 km · Morón, Haedo, Hurlingham ($3.500)" },
+            { km: 14, color: "#6366f1", label: "Radio 14 km · Tres de Febrero, Ramos Mejía ($4.000)" },
+            { km: 22, color: "#f97316", label: "Radio 22 km · CABA ($7.000 a $8.000)" }
+        ];
+
+        radii.forEach(r => {
+            const circle = L.circle(this.kitchenCoords, {
+                radius: r.km * 1000,
+                color: r.color,
+                fillColor: r.color,
+                fillOpacity: 0.07,
+                weight: 1.5,
+                dashArray: "6, 6"
+            });
+
+            circle.bindTooltip(r.label, { permanent: false, direction: "top" });
+            this.radiusLayers.push(circle);
+        });
+    }
+
+    setMapDisplayMode(mode) {
+        this.mapDisplayMode = mode;
+
+        const btnPoly = document.getElementById("btn-map-mode-polygons");
+        const btnRad = document.getElementById("btn-map-mode-radius");
+
+        if (mode === "polygons") {
+            if (btnPoly) btnPoly.classList.add("active");
+            if (btnRad) btnRad.classList.remove("active");
+
+            // Mostrar polígonos y ocultar círculos
+            Object.values(this.zoneLayers).forEach(layer => {
+                if (!this.deliveryMap.hasLayer(layer)) {
+                    this.deliveryMap.addLayer(layer);
+                }
+            });
+            this.radiusLayers.forEach(circle => {
+                if (this.deliveryMap.hasLayer(circle)) {
+                    this.deliveryMap.removeLayer(circle);
+                }
+            });
+        } else {
+            if (btnRad) btnRad.classList.add("active");
+            if (btnPoly) btnPoly.classList.remove("active");
+
+            // Ocultar polígonos y mostrar círculos de radio
+            Object.values(this.zoneLayers).forEach(layer => {
+                if (this.deliveryMap.hasLayer(layer)) {
+                    this.deliveryMap.removeLayer(layer);
+                }
+            });
+            this.radiusLayers.forEach(circle => {
+                if (!this.deliveryMap.hasLayer(circle)) {
+                    this.deliveryMap.addLayer(circle);
+                }
+            });
+        }
+    }
+
+    focusMapZone(zoneId) {
+        if (!this.deliveryMap) this.initDeliveryMap();
+
+        // Asegurar que estamos en modo polígonos
+        if (this.mapDisplayMode !== "polygons") {
+            this.setMapDisplayMode("polygons");
+        }
+
+        // Si se pide enfocar una macro-zona (Oeste o CABA)
+        if (zoneId === "gba-oeste" || zoneId === "caba") {
+            const layers = Object.keys(this.zoneStyles || {})
+                .filter(id => this.zoneStyles[id].parentGroup === zoneId)
+                .map(id => this.zoneLayers[id])
+                .filter(Boolean);
+
+            if (layers.length > 0 && typeof L.featureGroup === "function") {
+                const group = L.featureGroup(layers);
+                this.deliveryMap.fitBounds(group.getBounds(), {
+                    padding: [30, 30],
+                    animate: true,
+                    duration: 0.8
+                });
+            }
+
+            this.highlightZonePolygon(zoneId);
+            document.querySelectorAll(".hf-zone-card").forEach(c => c.classList.remove("is-highlighted"));
+            const card = document.getElementById(`zone-card-${zoneId}`);
+            if (card) card.classList.add("is-highlighted");
+            return;
+        }
+
+        // Si se pide enfocar una localidad específica
+        const polygon = this.zoneLayers[zoneId];
+        if (polygon && this.deliveryMap) {
+            this.deliveryMap.fitBounds(polygon.getBounds(), {
+                padding: [45, 45],
+                maxZoom: 14,
+                animate: true,
+                duration: 0.8
+            });
+
+            this.highlightZonePolygon(zoneId);
+            setTimeout(() => polygon.openPopup(), 500);
+
+            // Resaltar la tarjeta padre
+            const meta = this.zoneStyles ? this.zoneStyles[zoneId] : null;
+            if (meta && meta.parentGroup) {
+                document.querySelectorAll(".hf-zone-card").forEach(c => c.classList.remove("is-highlighted"));
+                const card = document.getElementById(`zone-card-${meta.parentGroup}`);
+                if (card) card.classList.add("is-highlighted");
+            }
+        }
+    }
+
+    highlightZonePolygon(zoneId) {
+        if (zoneId === "gba-oeste" || zoneId === "caba") {
+            Object.keys(this.zoneStyles || {}).forEach(id => {
+                if (this.zoneStyles[id].parentGroup === zoneId && this.zoneLayers[id]) {
+                    this.zoneLayers[id].setStyle({ weight: 3.5, fillOpacity: 0.48 });
+                }
+            });
+            return;
+        }
+
+        const polygon = this.zoneLayers[zoneId];
+        if (polygon) {
+            polygon.setStyle({
+                weight: 4,
+                fillOpacity: 0.55
+            });
+        }
+    }
+
+    resetZonePolygonHighlight() {
+        if (!this.zoneStyles) return;
+
+        Object.keys(this.zoneLayers).forEach(zoneId => {
+            const polygon = this.zoneLayers[zoneId];
+            const meta = this.zoneStyles[zoneId];
+            if (polygon && meta) {
+                polygon.setStyle({
+                    color: meta.color,
+                    fillColor: meta.fillColor,
+                    fillOpacity: meta.fillOpacity,
+                    weight: meta.weight
+                });
+            }
+        });
+
+        document.querySelectorAll(".hf-zone-card").forEach(c => c.classList.remove("is-highlighted"));
+    }
+
+    resetMapZoom() {
+        if (this.deliveryMap) {
+            this.deliveryMap.setView(this.kitchenCoords, 11, {
+                animate: true,
+                duration: 0.8
+            });
+        }
+    }
+
+    // Algoritmo de punto en polígono (Ray Casting)
+    isPointInPolygon(point, vs) {
+        const x = point[0], y = point[1];
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+            const xi = vs[i][0], yi = vs[i][1];
+            const xj = vs[j][0], yj = vs[j][1];
+            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    // Fórmula de Haversine para calcular distancia esférica en km
+    calculateDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radio de la Tierra en km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return parseFloat((R * c).toFixed(1));
+    }
+
+    handleMapClick(lat, lng) {
+        const km = this.calculateDistanceKm(this.kitchenCoords[0], this.kitchenCoords[1], lat, lng);
+
+        // Detectar si cae dentro de alguna localidad específica buscando en cada polígono
+        let detectedZoneId = null;
+        const point = [lat, lng];
+
+        for (const [zoneId, polygonLayer] of Object.entries(this.zoneLayers)) {
+            const latlngs = polygonLayer.getLatLngs()[0].map(ll => [ll.lat, ll.lng]);
+            if (this.isPointInPolygon(point, latlngs)) {
+                detectedZoneId = zoneId;
+                break;
+            }
+        }
+
+        // Heurística de respaldo si el clic fue en un límite intermedio
+        if (!detectedZoneId) {
+            if (km <= 4.5) {
+                detectedZoneId = "ituzaingo";
+            } else if (km <= 7.5) {
+                detectedZoneId = "castelar";
+            } else if (km <= 11) {
+                detectedZoneId = "moron-haedo";
+            } else if (lng > -58.53 && lng < -58.35 && lat >= -34.70 && lat <= -34.53) {
+                detectedZoneId = "caba-centro";
+            } else {
+                detectedZoneId = "fuera-de-zona";
+            }
+        }
+
+        const zoneConfig = DELIVERY_ZONES_CONFIG.find(z => z.id === detectedZoneId);
+        const zoneName = zoneConfig ? zoneConfig.name : "Fuera de Cobertura Habitual";
+        const zonePrice = zoneConfig ? `$${zoneConfig.price.toLocaleString("es-AR")}` : "Consultar";
+
+        this.clickedMapLocation = {
+            lat,
+            lng,
+            km,
+            zoneId: detectedZoneId,
+            zoneName,
+            zonePrice
+        };
+
+        // Colocar marcador visual en el punto cliqueado
+        if (this.clickMarker) {
+            this.deliveryMap.removeLayer(this.clickMarker);
+        }
+
+        const clickIcon = L.divIcon({
+            className: "click-map-pin-icon",
+            html: `<div style="font-size: 24px; text-shadow: 0 2px 6px rgba(0,0,0,0.3); transform: translate(-12px, -24px);">📍</div>`,
+            iconSize: [24, 24]
+        });
+
+        this.clickMarker = L.marker([lat, lng], { icon: clickIcon }).addTo(this.deliveryMap);
+
+        // Actualizar tarjeta flotante
+        const cardEl = document.getElementById("map-distance-floating-card");
+        const kmEl = document.getElementById("distance-card-km");
+        const zoneEl = document.getElementById("distance-card-zone");
+        const priceEl = document.getElementById("distance-card-price");
+        const actionBtn = document.getElementById("distance-card-action-btn");
+
+        if (cardEl && kmEl && zoneEl && priceEl) {
+            kmEl.innerText = `${km} km`;
+            zoneEl.innerText = zoneName;
+            priceEl.innerText = zonePrice;
+
+            if (detectedZoneId === "fuera-de-zona") {
+                if (actionBtn) {
+                    actionBtn.innerText = "Consultar Envío por WhatsApp";
+                    actionBtn.onclick = () => {
+                        window.open(`https://api.whatsapp.com/send?phone=5491126365636&text=Hola!%20Estoy%20a%20${km}km%20de%20Zárate%203171%20y%20quería%20consultar%20por%20envío`, "_blank");
+                    };
+                }
+            } else {
+                if (actionBtn) {
+                    actionBtn.innerText = `Elegir ${zoneConfig ? zoneConfig.shortName : 'esta Zona'} y Pedir`;
+                    actionBtn.onclick = () => this.selectZoneFromMapClick();
+                }
+            }
+
+            cardEl.style.display = "block";
+        }
+
+        // Resaltar la tarjeta correspondiente en la columna izquierda
+        if (detectedZoneId && detectedZoneId !== "fuera-de-zona") {
+            this.highlightZonePolygon(detectedZoneId);
+            const card = document.getElementById(`zone-card-${detectedZoneId}`);
+            if (card) {
+                document.querySelectorAll(".hf-zone-card").forEach(c => c.classList.remove("is-highlighted"));
+                card.classList.add("is-highlighted");
+            }
+        }
+    }
+
+    closeDistanceCard() {
+        const cardEl = document.getElementById("map-distance-floating-card");
+        if (cardEl) {
+            cardEl.style.display = "none";
+        }
+        if (this.clickMarker && this.deliveryMap) {
+            this.deliveryMap.removeLayer(this.clickMarker);
+            this.clickMarker = null;
+        }
+        this.resetZonePolygonHighlight();
+    }
+
+    selectZoneFromMapClick() {
+        if (this.clickedMapLocation && this.clickedMapLocation.zoneId) {
+            this.selectZoneForOrder(this.clickedMapLocation.zoneId);
+            this.closeDistanceCard();
+        }
+    }
+
+    selectZoneForOrder(zoneId) {
+        this.selectedDeliveryZone = zoneId;
+
+        if (zoneId === "corporativo") {
+            this.showView("corporate-login");
+            return;
+        }
+
+        // Sincronizar selector en checkout
+        const zoneSelect = document.getElementById("checkout-zone");
+        if (zoneSelect) {
+            zoneSelect.value = zoneId;
+        }
+
+        this.setCatalogType("particular");
+        this.showView("client");
+
+        // Feedback sutil
+        const zoneObj = DELIVERY_ZONES_CONFIG.find(z => z.id === zoneId);
+        if (zoneObj) {
+            console.log(`Zona seleccionada: ${zoneObj.name}`);
+        }
+    }
+
+    handleZoneChange() {
+        const zoneSelect = document.getElementById("checkout-zone");
+        if (zoneSelect) {
+            this.selectedDeliveryZone = zoneSelect.value;
+        }
+        this.renderCheckoutSummary();
+        this.updateCartUI();
     }
 
     handleAdminLinkClick() {
@@ -483,15 +1285,21 @@ class NutriRootsApp {
         });
 
         // Quitar active de nav links
-        document.getElementById("nav-client-link").classList.remove("active");
-        document.getElementById("nav-admin-link").classList.remove("active");
+        const navClientLink = document.getElementById("nav-client-link");
+        const navAdminLink = document.getElementById("nav-admin-link");
+        const navZonesLink = document.getElementById("nav-zones-link");
+        if (navClientLink) navClientLink.classList.remove("active");
+        if (navAdminLink) navAdminLink.classList.remove("active");
+        if (navZonesLink) navZonesLink.classList.remove("active");
+
+        this.updateNavVisibility(viewName);
 
         // Mostrar vista activa
         const activeSection = document.getElementById(`view-${viewName}`);
         if (activeSection) {
             if (viewName === "admin") {
                 activeSection.style.display = "grid"; // Admin usa grid
-                document.getElementById("nav-admin-link").classList.add("active");
+                if (navAdminLink) navAdminLink.classList.add("active");
 
                 const sideCompaniesBtn = document.getElementById("side-companies-btn");
                 if (sideCompaniesBtn) {
@@ -504,8 +1312,12 @@ class NutriRootsApp {
                 this.renderMenuEditor();
             } else {
                 activeSection.style.display = "block";
-                if (viewName === "client") {
-                    document.getElementById("nav-client-link").classList.add("active");
+                if (viewName === "client" && navClientLink) {
+                    navClientLink.classList.add("active");
+                }
+                if (viewName === "zones") {
+                    if (navZonesLink) navZonesLink.classList.add("active");
+                    this.initDeliveryMap();
                 }
                 if (viewName === "corporate-login") {
                     const corpCompanySelect = document.getElementById("corporate-company-select");
@@ -864,8 +1676,17 @@ class NutriRootsApp {
         if (typeSelect && typeSelect.value === "corporativo") {
             return 0; // Envío gratis para corporativo siempre
         }
+        if (this.catalogType === "corporativo") {
+            return 0;
+        }
         const totalQuantity = this.cart.reduce((sum, item) => sum + item.quantity, 0);
-        return totalQuantity >= 10 ? 0 : this.SHIPPING_COST;
+        if (totalQuantity >= 10) {
+            return 0; // Envío gratis a partir de 10 viandas
+        }
+        const zoneSelect = document.getElementById("checkout-zone");
+        const currentZoneId = zoneSelect ? zoneSelect.value : (this.selectedDeliveryZone || "caba");
+        const zoneObj = DELIVERY_ZONES_CONFIG.find(z => z.id === currentZoneId);
+        return zoneObj ? zoneObj.price : this.SHIPPING_COST;
     }
 
     renderCartItems() {
@@ -1079,12 +1900,19 @@ class NutriRootsApp {
         const shipping = this.getShippingCost();
         const total = subtotal + shipping;
 
+        // Obtener nombre descriptivo de la zona elegida
+        const zoneSelect = document.getElementById("checkout-zone");
+        const selectedZoneId = zoneSelect ? zoneSelect.value : (this.selectedDeliveryZone || "caba");
+        const zoneObj = DELIVERY_ZONES_CONFIG.find(z => z.id === selectedZoneId);
+        const deliveryZoneName = isParticular ? (zoneObj ? zoneObj.name : "CABA") : "Corporativo";
+
         const newOrder = {
             id: orderId,
             customerName: name,
             companyName: companyName,
             phone: phone,
             address: address,
+            deliveryZone: deliveryZoneName,
             deliveryDate: deliveryDate,
             deliveryTime: deliveryTime,
             paymentMethod: paymentMethod,
@@ -1222,6 +2050,15 @@ class NutriRootsApp {
                 `;
             }
 
+            if (order.deliveryZone) {
+                detailsHtml += `
+                    <div class="success-detail-item">
+                        <span class="success-detail-label">Zona de Entrega</span>
+                        <span class="success-detail-val">${order.deliveryZone}</span>
+                    </div>
+                `;
+            }
+
             if (order.address) {
                 detailsHtml += `
                     <div class="success-detail-item">
@@ -1289,6 +2126,9 @@ class NutriRootsApp {
         }
         if (order.phone) {
             message += `*Teléfono:* ${order.phone}\n`;
+        }
+        if (order.deliveryZone) {
+            message += `*Zona de Entrega:* ${order.deliveryZone}\n`;
         }
         if (order.address) {
             message += `*Dirección:* ${order.address}\n`;
@@ -1748,6 +2588,7 @@ class NutriRootsApp {
 
                 detailsContainer.innerHTML = `
                     <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; border-bottom: 1px solid var(--primary-light); padding-bottom: 0.4rem; display: flex; align-items: center;">${APP_ICONS.package} Detalles de Entrega y Pago</div>
+                    <div style="margin-bottom: 0.15rem;"><strong>Zona:</strong> ${order.deliveryZone || 'CABA'}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Teléfono:</strong> ${order.phone || 'N/A'}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Dirección:</strong> ${order.address || 'N/A'}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Fecha:</strong> ${dateFormatted || 'N/A'}</div>
@@ -1945,6 +2786,20 @@ class NutriRootsApp {
         const grid = document.getElementById("menu-editor-grid");
         if (!grid) return;
 
+        if (!this.menu || this.menu.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: var(--gray-50); border: 2px dashed var(--gray-300); border-radius: var(--radius-md);">
+                    <div style="font-size: 2.2rem; margin-bottom: 0.6rem;">🍽️</div>
+                    <h4 style="font-weight: 700; color: var(--dark); font-size: 1.1rem; margin-bottom: 0.4rem;">Base de datos de menús vacía</h4>
+                    <p style="color: var(--dark-muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 1.2rem auto;">No hay ningún plato cargado en el sistema. Puedes comenzar a cargar tus viandas reales haciendo clic en el botón a continuación.</p>
+                    <button class="btn-primary" onclick="app.openMenuModal()" style="font-size: 0.9rem; padding: 0.6rem 1.4rem;">
+                        + Agregar Primer Plato
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         grid.innerHTML = this.menu.map(item => {
             const imageUrl = item.image && item.image.trim() !== ""
                 ? item.image
@@ -1971,6 +2826,17 @@ class NutriRootsApp {
                 </div>
             `;
         }).join("");
+    }
+
+    clearAllMenus() {
+        if (confirm("¿Estás seguro de que deseas vaciar TODOS los menús? La lista quedará en 0 platos.")) {
+            this.menu = [];
+            this.saveMenuToLocalStorage();
+            this.renderMenuEditor();
+            this.renderMenuGrid();
+            this.renderCategoryChips();
+            alert("Base de datos de menús vaciada por completo. Ahora está en 0 para cargar desde cero.");
+        }
     }
 
     toggleItemAvailability(itemId, isAvailable) {

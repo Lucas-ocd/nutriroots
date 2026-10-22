@@ -11,6 +11,9 @@
     <meta property="og:locale" content="es_AR">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Leaflet para Mapa Interactivo de Polígonos de Reparto -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -26,6 +29,7 @@
         
         <div class="nav-actions">
             <a class="nav-link active" id="nav-client-link" onclick="app.handleCatalogLinkClick()">Opción de menús</a>
+            <a class="nav-link" id="nav-zones-link" onclick="app.handleZonesLinkClick()">Zonas y Envíos</a>
             <a class="nav-link" id="nav-admin-link" onclick="app.handleAdminLinkClick()">Panel Admin</a>
             
             <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()" style="display: none; align-items: center; gap: 0.4rem;">
@@ -70,11 +74,11 @@
                 
                 <!-- Feature Badges -->
                 <div class="landing-features">
-                    <div class="landing-feature">
+                    <div class="landing-feature" onclick="app.showView('zones')" style="cursor: pointer;" title="Consultar zonas y costos de entrega">
                         <div class="landing-feature-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
                         </div>
-                        <span>Envío gratis +10 viandas</span>
+                        <span>Envío gratis +10 viandas <strong style="color: var(--primary); font-size: 0.78rem; display: block;">Ver zonas →</strong></span>
                     </div>
                     <div class="landing-feature">
                         <div class="landing-feature-icon">
@@ -221,6 +225,338 @@
             </div>
         </section>
 
+        <!-- VISTA ZONAS DE ENTREGA Y COSTOS DE ENVÍO (Modelo Homefood) -->
+        <section id="view-zones" class="view-section hf-zones-section" style="display: none;">
+            <div class="zones-container">
+                
+                <!-- Encabezado Intro estilo Homefood -->
+                <div class="hf-zones-intro">
+                    <span class="hf-eyebrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 0.35rem;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        Cobertura &amp; Envíos
+                    </span>
+                    <h1 class="hf-zones-title">Llegamos hasta la puerta de tu casa</h1>
+                    <p class="hf-zones-lead">
+                        Elaboramos tus viandas en nuestra cocina central ubicada en <strong>Zárate 3171, Ituzaingó</strong>. Despachamos con cadena de frío estricta hacia <strong>Zona Oeste y CABA</strong>, con franjas horarias pensadas para tu rutina — vos elegís cuándo te viene mejor recibir tu pedido.
+                    </p>
+
+                    <!-- Banner Destacado Envío Gratis -->
+                    <div class="hf-free-shipping-banner">
+                        <div class="hf-free-shipping-badge">★ PROMO SEMANAL</div>
+                        <div class="hf-free-shipping-text">
+                            <strong>¡Envío 100% GRATIS en pedidos de 10 o más viandas!</strong>
+                            <span>Aplica automáticamente para todas las zonas de entrega y pedidos corporativos en oficinas.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layout Principal de 2 Columnas estilo Homefood (Tarjetas a la izquierda + Mapa a la derecha) -->
+                <div class="hf-zones-layout">
+                    
+                    <!-- Columna Izquierda: Tarjetas de Zona con detalles desplegables -->
+                    <div class="hf-zones-cards">
+                        
+                        <!-- Tarjeta 1: Zona Oeste (Cocina Base) -->
+                        <div class="hf-zone-card card-oeste" id="zone-card-gba-oeste" onmouseenter="app.highlightZonePolygon('gba-oeste')" onmouseleave="app.resetZonePolygonHighlight()">
+                            <div class="hf-zone-card__top">
+                                <span class="hf-zone-card__icon icon-oeste">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                                </span>
+                                <div class="hf-zone-card__header-text">
+                                    <div class="hf-zone-card__tags">
+                                        <span class="hf-pill-tag tag-kitchen">📍 Cocina Central (Ituzaingó)</span>
+                                        <span class="hf-pill-distance">0 a 10 km</span>
+                                    </div>
+                                    <h3 class="hf-zone-card__name">Zona Oeste</h3>
+                                </div>
+                            </div>
+                            <p class="hf-zone-card__desc">
+                                Cobertura prioritaria desde nuestra sede central en Zárate 3171. Ituzaingó, Castelar, Morón, Haedo, Hurlingham, Ramos Mejía, San Justo y alrededores.
+                            </p>
+                            
+                            <div class="hf-zone-card__pricing">
+                                <span class="hf-price-val">Desde $2.500</span>
+                                <span class="hf-price-cond">/ pedido · <strong>¡Gratis con 10+ viandas!</strong></span>
+                            </div>
+
+                            <!-- Selector rápido de localidades en Zona Oeste -->
+                            <div class="hf-zone-localities">
+                                <span class="hf-locality-label">Localidades con polígono interactivo:</span>
+                                <div class="hf-locality-chips">
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('ituzaingo')" title="Ver Ituzaingó en el mapa">
+                                        <span class="chip-dot" style="background:#10b981;"></span> Ituzaingó <strong>$2.500</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('castelar')" title="Ver Castelar en el mapa">
+                                        <span class="chip-dot" style="background:#059669;"></span> Castelar <strong>$3.000</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('moron-haedo')" title="Ver Morón y Haedo en el mapa">
+                                        <span class="chip-dot" style="background:#0d9488;"></span> Morón/Haedo <strong>$3.500</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('hurlingham')" title="Ver Hurlingham en el mapa">
+                                        <span class="chip-dot" style="background:#0284c7;"></span> Hurlingham <strong>$3.500</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('tres-de-febrero')" title="Ver 3 de Febrero en el mapa">
+                                        <span class="chip-dot" style="background:#6366f1;"></span> 3 de Febrero <strong>$4.000</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('la-matanza-norte')" title="Ver Ramos Mejía y San Justo en el mapa">
+                                        <span class="chip-dot" style="background:#8b5cf6;"></span> Ramos/San Justo <strong>$4.000</strong>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <details class="hf-zone-card__more">
+                                <summary>Ver todas las localidades de Zona Oeste</summary>
+                                <p>Ituzaingó (Zárate 3171 - Cocina Central), Parque Leloir, Villa Udaondo, Castelar, Morón, Haedo, El Palomar, Villa Sarmiento, San Antonio de Padua, Merlo, Hurlingham, Villa Tesei, William Morris, Ramos Mejía, San Justo, Ciudadela, Villa Luzuriaga, Lomas del Mirador, Caseros, Ciudad Jardín, Santos Lugares, Sáenz Peña, Martín Coronado.</p>
+                            </details>
+
+                            <div class="hf-zone-card__action">
+                                <button type="button" class="btn-primary btn-choose-zone" onclick="app.selectZoneForOrder('ituzaingo')">
+                                    <span>Elegir Zona Oeste y Pedir</span>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                </button>
+                                <button type="button" class="btn-map-focus" onclick="app.focusMapZone('gba-oeste')" title="Ver en el mapa">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    <span>Ver polígonos</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 2: CABA -->
+                        <div class="hf-zone-card card-caba" id="zone-card-caba" onmouseenter="app.highlightZonePolygon('caba')" onmouseleave="app.resetZonePolygonHighlight()">
+                            <div class="hf-zone-card__top">
+                                <span class="hf-zone-card__icon icon-caba">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </span>
+                                <div class="hf-zone-card__header-text">
+                                    <div class="hf-zone-card__tags">
+                                        <span class="hf-pill-tag tag-caba">Capital Federal</span>
+                                        <span class="hf-pill-distance">10 a 22 km</span>
+                                    </div>
+                                    <h3 class="hf-zone-card__name">CABA</h3>
+                                </div>
+                            </div>
+                            <p class="hf-zone-card__desc">
+                                Cobertura completa en toda la Ciudad Autónoma de Buenos Aires. Despacho ágil y directo por Autopista Acceso Oeste / 25 de Mayo.
+                            </p>
+
+                            <div class="hf-zone-card__pricing">
+                                <span class="hf-price-val">Desde $7.000</span>
+                                <span class="hf-price-cond">/ pedido · <strong>¡Gratis con 10+ viandas!</strong></span>
+                            </div>
+
+                            <!-- Selector rápido de sectores en CABA -->
+                            <div class="hf-zone-localities">
+                                <span class="hf-locality-label">Sectores con polígono interactivo:</span>
+                                <div class="hf-locality-chips">
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('caba-oeste')" title="Ver CABA Oeste en el mapa">
+                                        <span class="chip-dot" style="background:#ea580c;"></span> CABA Oeste <strong>$7.000</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('caba-norte')" title="Ver CABA Norte en el mapa">
+                                        <span class="chip-dot" style="background:#f59e0b;"></span> CABA Norte <strong>$7.500</strong>
+                                    </button>
+                                    <button type="button" class="hf-locality-chip" onclick="app.focusMapZone('caba-centro')" title="Ver CABA Centro en el mapa">
+                                        <span class="chip-dot" style="background:#e11d48;"></span> CABA Centro <strong>$8.000</strong>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <details class="hf-zone-card__more">
+                                <summary>Ver los 48 barrios de CABA</summary>
+                                <p>Agronomía, Almagro, Balvanera, Barracas, Belgrano, Boedo, Caballito, Chacarita, Coghlan, Colegiales, Constitución, Flores, Floresta, La Boca, Liniers, Mataderos, Monte Castro, Montserrat, Nueva Pompeya, Núñez, Palermo, Parque Avellaneda, Parque Chacabuco, Parque Chas, Parque Patricios, Paternal, Puerto Madero, Recoleta, Retiro, Saavedra, San Cristóbal, San Nicolás, San Telmo, Vélez Sársfield, Versalles, Villa Crespo, Villa del Parque, Villa Devoto, Villa General Mitre, Villa Lugano, Villa Luro, Villa Ortúzar, Villa Pueyrredón, Villa Real, Villa Riachuelo, Villa Santa Rita, Villa Soldati, Villa Urquiza.</p>
+                            </details>
+
+                            <div class="hf-zone-card__action">
+                                <button type="button" class="btn-primary btn-choose-zone" onclick="app.selectZoneForOrder('caba-oeste')">
+                                    <span>Elegir CABA y Pedir</span>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                                </button>
+                                <button type="button" class="btn-map-focus" onclick="app.focusMapZone('caba')" title="Ver en el mapa">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    <span>Ver polígonos</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Columna Derecha: Mapa Interactivo con Polígonos Geográficos Reales -->
+                    <div class="hf-zones-map-column">
+                        <div class="hf-map-sticky-wrapper">
+                            
+                            <!-- Barra de Herramientas y Leyenda del Mapa -->
+                            <div class="hf-map-toolbar">
+                                <div class="hf-map-mode-toggles">
+                                    <button type="button" id="btn-map-mode-polygons" class="hf-map-toggle-btn active" onclick="app.setMapDisplayMode('polygons')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                                        <span>Por Localidades</span>
+                                    </button>
+                                    <button type="button" id="btn-map-mode-radius" class="hf-map-toggle-btn" onclick="app.setMapDisplayMode('radius')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                                        <span>Radios km</span>
+                                    </button>
+                                </div>
+
+                                <div class="hf-map-actions">
+                                    <button type="button" class="hf-map-action-link" onclick="app.resetMapZoom()" title="Centrar en Zárate 3171, Ituzaingó">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span>Ituzaingó</span>
+                                    </button>
+                                    <a href="https://maps.google.com/?q=Zarate+3171,+Ituzaingo,+Buenos+Aires" target="_blank" rel="noopener" class="hf-map-action-link" title="Abrir en Google Maps">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        <span>Google Maps</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Leyenda interactiva de localidades y barrios -->
+                            <div class="hf-map-legend">
+                                <span class="legend-tag" onclick="app.focusMapZone('ituzaingo')" title="Clic para enfocar Ituzaingó"><span class="legend-circle" style="background: #10b981;"></span> Ituzaingó ($2.500)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('castelar')" title="Clic para enfocar Castelar"><span class="legend-circle" style="background: #059669;"></span> Castelar ($3.000)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('moron-haedo')" title="Clic para enfocar Morón/Haedo"><span class="legend-circle" style="background: #0d9488;"></span> Morón / Haedo ($3.500)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('hurlingham')" title="Clic para enfocar Hurlingham"><span class="legend-circle" style="background: #0284c7;"></span> Hurlingham ($3.500)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('tres-de-febrero')" title="Clic para enfocar 3 de Febrero"><span class="legend-circle" style="background: #6366f1;"></span> 3 de Febrero ($4.000)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('la-matanza-norte')" title="Clic para enfocar Ramos Mejía"><span class="legend-circle" style="background: #8b5cf6;"></span> Ramos / San Justo ($4.000)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('caba-oeste')" title="Clic para enfocar CABA Oeste"><span class="legend-circle" style="background: #ea580c;"></span> CABA Oeste ($7.000)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('caba-norte')" title="Clic para enfocar CABA Norte"><span class="legend-circle" style="background: #f59e0b;"></span> CABA Norte ($7.500)</span>
+                                <span class="legend-tag" onclick="app.focusMapZone('caba-centro')" title="Clic para enfocar CABA Centro"><span class="legend-circle" style="background: #e11d48;"></span> CABA Centro ($8.000)</span>
+                            </div>
+
+                            <!-- Contenedor del Mapa Leaflet -->
+                            <div class="hf-map-container">
+                                <div id="interactive-delivery-map"></div>
+
+                                <!-- Tarjeta Flotante Interactiva de Medición de Distancia -->
+                                <div id="map-distance-floating-card" class="hf-map-floating-card" style="display: none;">
+                                    <div class="floating-card-header">
+                                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                            <span>📍</span>
+                                            <strong id="distance-card-title">Punto en el Mapa</strong>
+                                        </div>
+                                        <button type="button" onclick="app.closeDistanceCard()" class="floating-card-close">&times;</button>
+                                    </div>
+                                    <div class="floating-card-body">
+                                        <div class="floating-row">
+                                            <span>Distancia a Zárate 3171:</span>
+                                            <strong id="distance-card-km">-- km</strong>
+                                        </div>
+                                        <div class="floating-row">
+                                            <span>Zona asignada:</span>
+                                            <strong id="distance-card-zone" style="color: var(--primary);">--</strong>
+                                        </div>
+                                        <div class="floating-row">
+                                            <span>Costo de envío:</span>
+                                            <strong id="distance-card-price">--</strong>
+                                        </div>
+                                        <div class="floating-promo-free">
+                                            ★ ¡Envío GRATIS en 10 o más viandas!
+                                        </div>
+                                    </div>
+                                    <button type="button" id="distance-card-action-btn" class="btn-primary" style="width: 100%; margin-top: 0.7rem; padding: 0.5rem; font-size: 0.85rem;" onclick="app.selectZoneFromMapClick()">
+                                        Elegir esta Zona y Pedir
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p class="hf-map-tip">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary); vertical-align: -2px; margin-right: 0.3rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                <strong>Tip:</strong> Hacé clic en cualquier calle o punto del mapa para medir los kilómetros exactos hasta nuestra cocina en Zárate 3171 (Ituzaingó) y conocer tu costo.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Tarjetas de Franjas Horarias y Costos de Envío estilo Homefood -->
+                <div class="hf-shipping-costs">
+                    <div class="hf-cost-card hf-cost-card--morning">
+                        <span class="hf-cost-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        </span>
+                        <div class="hf-cost-card__content">
+                            <span class="hf-cost-card__label">Franja Matutina · 11 a 15 hs</span>
+                            <span class="hf-cost-card__amount">$4.000 a $8.000</span>
+                            <span class="hf-cost-card__note">★ Sin cargo / GRATIS en pedidos de 10 viandas o más</span>
+                        </div>
+                    </div>
+
+                    <div class="hf-cost-card hf-cost-card--evening">
+                        <span class="hf-cost-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </span>
+                        <div class="hf-cost-card__content">
+                            <span class="hf-cost-card__label">Franja Vespertina · 18 a 21 hs</span>
+                            <span class="hf-cost-card__amount">Domingos y Lunes</span>
+                            <span class="hf-cost-card__note">★ Para que arranques tu semana con el freezer completo</span>
+                        </div>
+                    </div>
+
+                    <div class="hf-cost-card hf-cost-card--corp">
+                        <span class="hf-cost-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/><line x1="8" y1="6" x2="8.01" y2="6"/><line x1="16" y1="6" x2="16.01" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/></svg>
+                        </span>
+                        <div class="hf-cost-card__content">
+                            <span class="hf-cost-card__label">Envíos Corporativos · Oficinas</span>
+                            <span class="hf-cost-card__amount">$0 Bonificado</span>
+                            <span class="hf-cost-card__note">✓ Envío sin cargo para empresas clientes registradas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preguntas Frecuentes e Información Logística -->
+                <div class="zones-info-section">
+                    <h2 class="section-title" style="text-align: center; margin-bottom: 2rem;">¿Cómo funciona la entrega de tus viandas?</h2>
+                    <div class="zones-info-grid">
+                        <div class="zone-info-card">
+                            <div class="zone-info-icon" style="background: #e0f2fe; color: #0284c7;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>
+                            </div>
+                            <h3>Cadena de Frío Garantizada</h3>
+                            <p>Las viandas viajan congeladas y en conservadoras térmicas especiales. Al recibirlas van directo a tu freezer, listas para regenerar en microondas en minutos.</p>
+                        </div>
+
+                        <div class="zone-info-card">
+                            <div class="zone-info-icon" style="background: #fef3c7; color: #d97706;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <h3>Cierre de Pedidos</h3>
+                            <p>Tomamos pedidos hasta los <strong>jueves a las 20:00 hs</strong>. Cocinamos fresco los viernes y sábados, y entregamos los <strong>domingos y lunes</strong>.</p>
+                        </div>
+
+                        <div class="zone-info-card">
+                            <div class="zone-info-icon" style="background: #dcfce7; color: #16a34a;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                            </div>
+                            <h3>Formas de Pago</h3>
+                            <p>Aboná de forma 100% segura: transferencia bancaria previa o en <strong>efectivo al momento de recibir</strong> tu pedido en mano.</p>
+                        </div>
+
+                        <div class="zone-info-card">
+                            <div class="zone-info-icon" style="background: #fce7f3; color: #db2777;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            </div>
+                            <h3>¿Estás fuera de zona?</h3>
+                            <p>Si tu barrio no figura en el mapa habitual, escribinos por WhatsApp. Coordinamos entregas personalizadas mediante cadetería o punto de encuentro.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Banner Final -->
+                <div class="zones-bottom-cta">
+                    <h2>¿Listo para organizar tus comidas de la semana?</h2>
+                    <p>Elegí tus platos saludables favoritos de nuestro catálogo y recibilos en la comodidad de tu casa.</p>
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                        <button class="btn-primary" onclick="app.handleCatalogLinkClick()" style="padding: 0.9rem 2rem; font-size: 1rem;">
+                            Ver Menú Semanal y Pedir
+                        </button>
+                        <a href="https://api.whatsapp.com/send?phone=5491126365636&text=Hola!%20Quería%20consultar%20por%20envíos%20a%20mi%20zona" target="_blank" class="btn-secondary" style="padding: 0.9rem 1.8rem; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <svg class="svg-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.176 8.176 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.44 0-2.86-.38-4.11-1.11l-.3-.18-3.12.82.83-3.04-.2-.31a8.17 8.17 0 0 1-1.25-4.42c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.49-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.12.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.18-.47-.3z"/></svg>
+                            Consultar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- VISTA CHECKOUT: Formulario de Confirmación -->
         <section id="view-checkout" class="view-section" style="display: none;">
             <div class="checkout-container">
@@ -255,6 +591,29 @@
                         
                         <!-- Campos de entrega y pago específicos para particulares -->
                         <div id="checkout-particular-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="checkout-zone">Zona o Localidad de Entrega en Buenos Aires *</label>
+                                <select id="checkout-zone" onchange="app.handleZoneChange()">
+                                    <optgroup label="GBA Zona Oeste (Cercanía a Zárate 3171, Ituzaingó)">
+                                        <option value="ituzaingo" selected>Ituzaingó - Sede Central ($2.500 · Lun a Vie)</option>
+                                        <option value="castelar">Castelar ($3.000 · Lun a Vie)</option>
+                                        <option value="moron-haedo">Morón & Haedo ($3.500 · Lun, Mié y Vie)</option>
+                                        <option value="hurlingham">Hurlingham & Villa Tesei ($3.500 · Mar y Jue)</option>
+                                        <option value="tres-de-febrero">Tres de Febrero / Caseros / El Palomar ($4.000 · Mar y Jue)</option>
+                                        <option value="la-matanza-norte">Ramos Mejía & San Justo ($4.000 · Mié y Vie)</option>
+                                        <option value="gba-oeste">Otra localidad de Zona Oeste ($4.000)</option>
+                                    </optgroup>
+                                    <optgroup label="CABA (Capital Federal)">
+                                        <option value="caba-oeste">CABA Oeste (Devoto, Flores, Liniers) ($7.000 · Dom y Lun)</option>
+                                        <option value="caba-norte">CABA Norte (Palermo, Belgrano, Núñez) ($7.500 · Dom y Lun)</option>
+                                        <option value="caba-centro">CABA Centro & Este (Caballito, Recoleta, Retiro) ($8.000 · Dom y Lun)</option>
+                                        <option value="caba">CABA General / Resto de barrios ($8.000)</option>
+                                    </optgroup>
+                                </select>
+                                <small style="display: block; margin-top: 0.35rem; color: var(--dark-muted); font-size: 0.8rem;">
+                                    ¿Dudas sobre tu localidad? <a href="javascript:void(0)" onclick="app.showView('zones')" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Consultá aquí los barrios y costos</a>.
+                                </small>
+                            </div>
                             <div class="form-group">
                                 <label for="checkout-address">Dirección de Entrega *</label>
                                 <input type="text" id="checkout-address" placeholder="Calle, número, piso, departamento">
@@ -522,9 +881,14 @@
                         <div class="admin-panel-card">
                             <div class="panel-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
                                 <h3 style="font-size: 1.3rem;">Menú de Viandas</h3>
-                                <button class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="app.openMenuModal()">
-                                    + Agregar Plato
-                                </button>
+                                <div style="display: flex; gap: 0.6rem;">
+                                    <button class="btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem; color: #dc2626; border-color: #fca5a5;" onclick="app.clearAllMenus()">
+                                        Vaciar Menús
+                                    </button>
+                                    <button class="btn-primary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem;" onclick="app.openMenuModal()">
+                                        + Agregar Plato
+                                    </button>
+                                </div>
                             </div>
                             <div class="menu-editor-grid" id="menu-editor-grid">
                                 <!-- Dinámico -->
@@ -862,6 +1226,7 @@
             <div class="footer-column">
                 <h4>Información</h4>
                 <p>Viandas congeladas artesanales</p>
+                <p><a href="javascript:void(0)" onclick="app.showView('zones')" style="color: inherit; text-decoration: underline; font-weight: 500;">Costos de entrega por zona</a></p>
                 <p>Envío gratis +10 viandas</p>
                 <p>Pago en efectivo o transferencia</p>
                 <a href="https://www.instagram.com/nutrirootsfood/" target="_blank">Seguinos en @nutrirootsfood</a>
