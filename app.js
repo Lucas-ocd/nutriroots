@@ -1593,6 +1593,72 @@ class NutriRootsApp {
         this.showView("landing");
     }
 
+    async handleForgotPassword() {
+        const emailInput = document.getElementById("login-username");
+        const defaultEmail = emailInput && emailInput.value && emailInput.value.includes("@") ? emailInput.value.trim() : "";
+        const email = prompt("Ingresá tu correo electrónico para enviarte el enlace de restablecimiento de contraseña:", defaultEmail);
+        if (!email) return;
+
+        if (typeof firebase !== "undefined" && typeof firebase.auth === "function" && typeof firebase.auth().sendPasswordResetEmail === "function") {
+            try {
+                await firebase.auth().sendPasswordResetEmail(email.trim());
+                alert(`Te enviamos un correo a ${email.trim()} con un enlace seguro para crear tu nueva contraseña. Revisá tu bandeja de entrada o spam.`);
+            } catch (error) {
+                console.error("Error al enviar email de restablecimiento:", error);
+                if (error.code === "auth/user-not-found") {
+                    alert("No existe ningún usuario registrado con ese correo.");
+                } else if (error.code === "auth/invalid-email") {
+                    alert("El formato del correo es inválido.");
+                } else {
+                    alert("No se pudo enviar el correo: " + (error.message || "Revisá los datos e intentá de nuevo."));
+                }
+            }
+        } else {
+            alert("El servicio de autenticación no está disponible en este momento.");
+        }
+    }
+
+    async promptChangePassword() {
+        if (typeof firebase === "undefined" || typeof firebase.auth !== "function") {
+            alert("El servicio de autenticación no está activo.");
+            return;
+        }
+
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert("No hay una sesión activa de Firebase.");
+            return;
+        }
+
+        const newPass = prompt("Ingresá tu nueva contraseña (mínimo 6 caracteres):");
+        if (!newPass) return;
+
+        if (newPass.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        const confirmPass = prompt("Confirmá tu nueva contraseña reescribiéndola:");
+        if (!confirmPass) return;
+
+        if (newPass !== confirmPass) {
+            alert("Las contraseñas no coinciden. Operación cancelada.");
+            return;
+        }
+
+        try {
+            await user.updatePassword(newPass);
+            alert("¡Contraseña actualizada con éxito! La próxima vez que inicies sesión usá tu nueva clave.");
+        } catch (error) {
+            console.error("Error al cambiar contraseña:", error);
+            if (error.code === "auth/requires-recent-login") {
+                alert("Por seguridad de Google, como iniciaste sesión hace tiempo, debés cerrar sesión y volver a entrar antes de cambiar tu contraseña.");
+            } else {
+                alert("No se pudo cambiar la contraseña: " + (error.message || "Intentá de nuevo más tarde."));
+            }
+        }
+    }
+
     selectLandingOption(type) {
         if (type === 'particular') {
             this.setCatalogType('particular');
