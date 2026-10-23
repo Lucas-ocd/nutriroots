@@ -256,6 +256,20 @@ class NutriRootsApp {
             }
         }
 
+        // Escuchar cambios de sesión de Firebase Auth si está cargado
+        if (typeof firebase !== "undefined" && typeof firebase.auth === "function") {
+            try {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (user && user.email) {
+                        this.adminSession = user.email;
+                        sessionStorage.setItem("nr_admin_session", user.email);
+                    }
+                });
+            } catch (e) {
+                console.error("Error al suscribir a Firebase Auth:", e);
+            }
+        }
+
         // Verificar sesión de administración guardada
         const savedSession = sessionStorage.getItem("nr_admin_session");
         if (savedSession) {
@@ -1445,16 +1459,66 @@ class NutriRootsApp {
         this.renderMenuGrid();
     }
 
-    handleLoginSubmit(event) {
-        event.preventDefault();
-        const username = document.getElementById("login-username").value.trim().toLowerCase();
-        const password = document.getElementById("login-password").value;
+    async handleLoginSubmit(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        const usernameInput = document.getElementById("login-username");
+        const passwordInput = document.getElementById("login-password");
         const errorMsg = document.getElementById("login-error-msg");
+        const errorText = document.getElementById("login-error-text");
+        const submitBtn = document.getElementById("btn-login-submit");
 
+        const username = usernameInput ? usernameInput.value.trim().toLowerCase() : "";
+        const password = passwordInput ? passwordInput.value : "";
+
+        if (errorMsg) errorMsg.style.display = "none";
+
+        // Autenticación oficial con Firebase Auth cuando esté disponible
+        if (typeof firebase !== "undefined" && typeof firebase.auth === "function" && typeof firebase.auth().signInWithEmailAndPassword === "function") {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Verificando...";
+            }
+            try {
+                // Permite ingresar con el email directo o 'admin'/'nutriroots' que mapea al correo oficial
+                const emailToAuth = username.includes("@") ? username : "pintolucasnicolas@gmail.com";
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(emailToAuth, password);
+                const user = userCredential.user;
+                this.adminSession = user.email || "admin";
+                sessionStorage.setItem("nr_admin_session", this.adminSession);
+                this.selectCompany("nutriroots", false);
+                this.showView("admin");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Iniciar Sesión";
+                }
+                return;
+            } catch (authError) {
+                console.error("Fallo de autenticación Firebase:", authError.code, authError.message);
+                if (errorMsg) {
+                    if (errorText) {
+                        if (authError.code === "auth/invalid-credential" || authError.code === "auth/wrong-password" || authError.code === "auth/user-not-found") {
+                            errorText.textContent = "Correo o contraseña incorrectos.";
+                        } else if (authError.code === "auth/too-many-requests") {
+                            errorText.textContent = "Demasiados intentos. Esperá unos minutos.";
+                        } else {
+                            errorText.textContent = "Error al iniciar sesión: " + (authError.message || "Revisá los datos.");
+                        }
+                    }
+                    errorMsg.style.display = "flex";
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Iniciar Sesión";
+                }
+                return;
+            }
+        }
+
+        // Modo fallback (para pruebas automáticas o sin Firebase Auth cargado)
         const credentials = {
             "admin": "roots123",
             "nutriroots": "roots123",
-            "corporativo": "corp123"
+            "pintolucasnicolas@gmail.com": "roots123"
         };
 
         if (credentials[username] && credentials[username] === password) {
@@ -1464,11 +1528,19 @@ class NutriRootsApp {
             this.selectCompany("nutriroots", false);
             this.showView("admin");
         } else {
-            if (errorMsg) errorMsg.style.display = "block";
+            if (errorMsg) {
+                if (errorText) errorText.textContent = "Usuario o contraseña incorrectos.";
+                errorMsg.style.display = "flex";
+            }
         }
     }
 
     handleLogout() {
+        if (typeof firebase !== "undefined" && typeof firebase.auth === "function") {
+            try {
+                firebase.auth().signOut().catch(console.error);
+            } catch (e) {}
+        }
         sessionStorage.removeItem("nr_admin_session");
         this.adminSession = null;
         this.activeCompany = "nutriroots";

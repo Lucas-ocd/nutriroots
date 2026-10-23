@@ -154,20 +154,20 @@
                     
                     <form id="login-form" onsubmit="app.handleLoginSubmit(event)">
                         <div class="form-group" style="text-align: left; margin-bottom: 1.2rem;">
-                            <label for="login-username" style="font-weight: 600; font-size: 0.85rem;">Usuario / Cocina *</label>
-                            <input type="text" id="login-username" required placeholder="Ej. admin o nutriroots" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                            <label for="login-username" style="font-weight: 600; font-size: 0.85rem;">Correo electrónico de Administrador *</label>
+                            <input type="email" id="login-username" required placeholder="pintolucasnicolas@gmail.com" autocomplete="email" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                         </div>
                         <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
                             <label for="login-password" style="font-weight: 600; font-size: 0.85rem;">Contraseña *</label>
-                            <input type="password" id="login-password" required placeholder="Ingresa tu contraseña" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
+                            <input type="password" id="login-password" required placeholder="Ingresa tu contraseña" autocomplete="current-password" style="width: 100%; padding: 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--gray-300); margin-top: 0.4rem; box-sizing: border-box;">
                         </div>
                         
                         <div id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; text-align: center; display: none; align-items: center; justify-content: center; gap: 0.4rem;">
                             <svg class="svg-icon" style="width: 16px; height: 16px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            <span>Usuario o contraseña incorrectos.</span>
+                            <span id="login-error-text">Correo o contraseña incorrectos.</span>
                         </div>
                         
-                        <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Iniciar Sesión</button>
+                        <button type="submit" id="btn-login-submit" class="btn-primary" style="width: 100%; padding: 0.8rem; font-weight: 600; cursor: pointer;">Iniciar Sesión</button>
                     </form>
                     
                     <button class="btn-secondary" onclick="app.showView('client')" style="width: 100%; margin-top: 1rem; border: none; background: transparent; color: var(--gray-500); font-size: 0.9rem; cursor: pointer;">
@@ -1266,6 +1266,7 @@
     <!-- LOGIC SCRIPTS -->
     <!-- Firebase SDK (Compat v8 api over v10) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     
     <script src="data.js"></script>
