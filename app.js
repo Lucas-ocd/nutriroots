@@ -1593,69 +1593,168 @@ class NutriRootsApp {
         this.showView("landing");
     }
 
-    async handleForgotPassword() {
-        const emailInput = document.getElementById("login-username");
-        const defaultEmail = emailInput && emailInput.value && emailInput.value.includes("@") ? emailInput.value.trim() : "";
-        const email = prompt("Ingresá tu correo electrónico para enviarte el enlace de restablecimiento de contraseña:", defaultEmail);
+    // --- GESTIÓN DE CONTRASEÑAS (Firebase Auth) ---
+    openForgotPasswordModal() {
+        const modal = document.getElementById("modal-forgot-password");
+        const emailInput = document.getElementById("forgot-password-email");
+        const loginEmail = document.getElementById("login-username");
+        const msg = document.getElementById("forgot-password-msg");
+        if (msg) msg.style.display = "none";
+        if (emailInput) {
+            emailInput.value = loginEmail && loginEmail.value.includes("@") ? loginEmail.value.trim() : "";
+        }
+        if (modal) modal.style.display = "flex";
+    }
+
+    closeForgotPasswordModal() {
+        const modal = document.getElementById("modal-forgot-password");
+        if (modal) modal.style.display = "none";
+    }
+
+    handleForgotPassword() {
+        this.openForgotPasswordModal();
+    }
+
+    async submitForgotPassword(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        const emailInput = document.getElementById("forgot-password-email");
+        const msg = document.getElementById("forgot-password-msg");
+        const btn = document.getElementById("btn-forgot-submit");
+        const email = emailInput ? emailInput.value.trim() : "";
         if (!email) return;
+
+        if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
 
         if (typeof firebase !== "undefined" && typeof firebase.auth === "function" && typeof firebase.auth().sendPasswordResetEmail === "function") {
             try {
-                await firebase.auth().sendPasswordResetEmail(email.trim());
-                alert(`Te enviamos un correo a ${email.trim()} con un enlace seguro para crear tu nueva contraseña. Revisá tu bandeja de entrada o spam.`);
+                await firebase.auth().sendPasswordResetEmail(email);
+                if (msg) {
+                    msg.style.display = "block";
+                    msg.style.background = "#ecfdf5";
+                    msg.style.color = "#059669";
+                    msg.style.border = "1px solid #a7f3d0";
+                    msg.textContent = `¡Listo! Te enviamos un email a ${email} con el enlace oficial para restablecer tu clave. Revisá tu bandeja de entrada o spam.`;
+                }
+                setTimeout(() => {
+                    this.closeForgotPasswordModal();
+                }, 3500);
             } catch (error) {
                 console.error("Error al enviar email de restablecimiento:", error);
-                if (error.code === "auth/user-not-found") {
-                    alert("No existe ningún usuario registrado con ese correo.");
-                } else if (error.code === "auth/invalid-email") {
-                    alert("El formato del correo es inválido.");
-                } else {
-                    alert("No se pudo enviar el correo: " + (error.message || "Revisá los datos e intentá de nuevo."));
+                if (msg) {
+                    msg.style.display = "block";
+                    msg.style.background = "#fef2f2";
+                    msg.style.color = "#ef4444";
+                    msg.style.border = "1px solid #fecaca";
+                    if (error.code === "auth/user-not-found") {
+                        msg.textContent = "No existe ningún usuario registrado con ese correo.";
+                    } else if (error.code === "auth/invalid-email") {
+                        msg.textContent = "El formato del correo es inválido.";
+                    } else {
+                        msg.textContent = "Error: " + (error.message || "No se pudo enviar el correo.");
+                    }
                 }
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = "Enviar Enlace"; }
             }
         } else {
-            alert("El servicio de autenticación no está disponible en este momento.");
+            alert("El servicio de autenticación no está disponible.");
+            if (btn) { btn.disabled = false; btn.textContent = "Enviar Enlace"; }
         }
     }
 
-    async promptChangePassword() {
+    openChangePasswordModal() {
+        const modal = document.getElementById("modal-change-password");
+        const msg = document.getElementById("change-password-msg");
+        const form = document.getElementById("change-password-form");
+        if (form) form.reset();
+        if (msg) msg.style.display = "none";
+        if (modal) modal.style.display = "flex";
+    }
+
+    closeChangePasswordModal() {
+        const modal = document.getElementById("modal-change-password");
+        if (modal) modal.style.display = "none";
+    }
+
+    promptChangePassword() {
+        this.openChangePasswordModal();
+    }
+
+    async submitChangePassword(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        const newPass = document.getElementById("change-password-new")?.value || "";
+        const confirmPass = document.getElementById("change-password-confirm")?.value || "";
+        const msg = document.getElementById("change-password-msg");
+        const btn = document.getElementById("btn-change-submit");
+
+        if (newPass.length < 6) {
+            if (msg) {
+                msg.style.display = "block";
+                msg.style.background = "#fef2f2";
+                msg.style.color = "#ef4444";
+                msg.style.border = "1px solid #fecaca";
+                msg.textContent = "La contraseña debe tener al menos 6 caracteres.";
+            }
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            if (msg) {
+                msg.style.display = "block";
+                msg.style.background = "#fef2f2";
+                msg.style.color = "#ef4444";
+                msg.style.border = "1px solid #fecaca";
+                msg.textContent = "Las contraseñas no coinciden.";
+            }
+            return;
+        }
+
         if (typeof firebase === "undefined" || typeof firebase.auth !== "function") {
-            alert("El servicio de autenticación no está activo.");
+            alert("El servicio de autenticación no está disponible.");
             return;
         }
 
         const user = firebase.auth().currentUser;
         if (!user) {
-            alert("No hay una sesión activa de Firebase.");
+            if (msg) {
+                msg.style.display = "block";
+                msg.style.background = "#fef2f2";
+                msg.style.color = "#ef4444";
+                msg.style.border = "1px solid #fecaca";
+                msg.textContent = "Para cambiar tu clave primero debés iniciar sesión con tu correo de administrador.";
+            }
             return;
         }
 
-        const newPass = prompt("Ingresá tu nueva contraseña (mínimo 6 caracteres):");
-        if (!newPass) return;
-
-        if (newPass.length < 6) {
-            alert("La contraseña debe tener al menos 6 caracteres.");
-            return;
-        }
-
-        const confirmPass = prompt("Confirmá tu nueva contraseña reescribiéndola:");
-        if (!confirmPass) return;
-
-        if (newPass !== confirmPass) {
-            alert("Las contraseñas no coinciden. Operación cancelada.");
-            return;
-        }
+        if (btn) { btn.disabled = true; btn.textContent = "Guardando..."; }
 
         try {
             await user.updatePassword(newPass);
-            alert("¡Contraseña actualizada con éxito! La próxima vez que inicies sesión usá tu nueva clave.");
+            if (msg) {
+                msg.style.display = "block";
+                msg.style.background = "#ecfdf5";
+                msg.style.color = "#059669";
+                msg.style.border = "1px solid #a7f3d0";
+                msg.textContent = "¡Contraseña actualizada con éxito! La próxima vez que ingreses usá tu nueva clave.";
+            }
+            setTimeout(() => {
+                this.closeChangePasswordModal();
+            }, 2500);
         } catch (error) {
             console.error("Error al cambiar contraseña:", error);
-            if (error.code === "auth/requires-recent-login") {
-                alert("Por seguridad de Google, como iniciaste sesión hace tiempo, debés cerrar sesión y volver a entrar antes de cambiar tu contraseña.");
-            } else {
-                alert("No se pudo cambiar la contraseña: " + (error.message || "Intentá de nuevo más tarde."));
+            if (msg) {
+                msg.style.display = "block";
+                msg.style.background = "#fef2f2";
+                msg.style.color = "#ef4444";
+                msg.style.border = "1px solid #fecaca";
+                if (error.code === "auth/requires-recent-login") {
+                    msg.textContent = "Por seguridad de Google, debés cerrar sesión y volver a entrar antes de cambiar tu contraseña.";
+                } else {
+                    msg.textContent = "Error: " + (error.message || "No se pudo actualizar la contraseña.");
+                }
             }
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = "Guardar Nueva Clave"; }
         }
     }
 
