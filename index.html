@@ -29,7 +29,7 @@
         
         <div class="nav-actions">
             <a class="nav-link active" id="nav-client-link" onclick="app.handleCatalogLinkClick()">Opción de menús</a>
-            <a class="nav-link" id="nav-zones-link" onclick="app.handleZonesLinkClick()">Zonas y Envíos</a>
+            <a class="nav-link zones-entry" id="nav-zones-link" onclick="app.handleZonesLinkClick()">Zonas y Envíos</a>
             <a class="nav-link" id="nav-admin-link" onclick="app.handleAdminLinkClick()">Panel Admin</a>
             
             <button class="btn-cart" id="btn-cart-toggle" onclick="app.toggleCart()" style="display: none; align-items: center; gap: 0.4rem;">
@@ -74,7 +74,7 @@
                 
                 <!-- Feature Badges -->
                 <div class="landing-features">
-                    <div class="landing-feature" onclick="app.showView('zones')" style="cursor: pointer;" title="Consultar zonas y costos de entrega">
+                    <div class="landing-feature zones-entry" onclick="app.showView('zones')" style="cursor: pointer;" title="Consultar zonas y costos de entrega">
                         <div class="landing-feature-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
                         </div>
@@ -610,7 +610,7 @@
                                         <option value="caba">CABA General / Resto de barrios ($8.000)</option>
                                     </optgroup>
                                 </select>
-                                <small style="display: block; margin-top: 0.35rem; color: var(--dark-muted); font-size: 0.8rem;">
+                                <small class="zones-entry" style="display: block; margin-top: 0.35rem; color: var(--dark-muted); font-size: 0.8rem;">
                                     ¿Dudas sobre tu localidad? <a href="javascript:void(0)" onclick="app.showView('zones')" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Consultá aquí los barrios y costos</a>.
                                 </small>
                             </div>
@@ -764,6 +764,22 @@
                                 <span>Empresas Clientes</span>
                             </li>
                         </ul>
+                     <div style="margin-top: 1.5rem; padding: 0.9rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);">
+                        <label for="admin-zones-toggle" style="display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--dark);">
+                            <span>Zonas y Envíos
+                                <small id="admin-zones-status" style="display: block; font-weight: 600; font-size: 0.75rem; margin-top: 0.15rem;">Visible al público</small>
+                            </span>
+                            <input type="checkbox" id="admin-zones-toggle" class="zones-switch" checked onchange="app.toggleZonesEnabled(this.checked)">
+                        </label>
+                        <small style="display: block; margin-top: 0.4rem; font-size: 0.72rem; color: var(--dark-muted);">Si la desactivás, solo vos la ves como admin.</small>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.9rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: var(--radius-sm);">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--dark);">Respaldo de datos</div>
+                        <small style="display: block; margin: 0.25rem 0 0.6rem; font-size: 0.72rem; color: var(--dark-muted);">Pedidos y menú se copian solos cada vez que cambian.</small>
+                        <button type="button" id="btn-backup-download" class="btn-secondary" onclick="app.exportFullBackup()" style="width: 100%; font-size: 0.78rem; padding: 0.45rem 0.6rem; margin-bottom: 0.4rem;">Descargar respaldo (archivo)</button>
+                        <button type="button" id="btn-backup-restore-orders" class="btn-secondary" onclick="app.restoreMissingOrders()" style="width: 100%; font-size: 0.78rem; padding: 0.45rem 0.6rem; margin-bottom: 0.4rem;">Restaurar pedidos faltantes</button>
+                        <button type="button" id="btn-backup-restore-menu" class="btn-secondary" onclick="app.restoreMenuFromHistory()" style="width: 100%; font-size: 0.78rem; padding: 0.45rem 0.6rem;">Volver a un menú anterior</button>
+                    </div>
                     </div>
                     <ul class="sidebar-menu" style="margin-top: auto; border-top: 1px solid var(--gray-200); padding-top: 1rem;">
                         <li class="sidebar-item" onclick="app.handleLogout()" style="color: #ef4444; font-weight: 600; cursor: pointer;">
@@ -1226,7 +1242,7 @@
             <div class="footer-column">
                 <h4>Información</h4>
                 <p>Viandas congeladas artesanales</p>
-                <p><a href="javascript:void(0)" onclick="app.showView('zones')" style="color: inherit; text-decoration: underline; font-weight: 500;">Costos de entrega por zona</a></p>
+                <p class="zones-entry"><a href="javascript:void(0)" onclick="app.showView('zones')" style="color: inherit; text-decoration: underline; font-weight: 500;">Costos de entrega por zona</a></p>
                 <p>Envío gratis +10 viandas</p>
                 <p>Pago en efectivo o transferencia</p>
                 <a href="https://www.instagram.com/nutrirootsfood/" target="_blank">Seguinos en @nutrirootsfood</a>

@@ -3231,3 +3231,8 @@ footer::before {
     margin: 0 auto;
 }
 
+
+/* Zonas y Envios: oculto al publico cuando el admin lo desactiva */
+html.zones-hidden .zones-entry { display: none !important; }
+.zones-switch { width: 2.4rem; height: 1.3rem; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+

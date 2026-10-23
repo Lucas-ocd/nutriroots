@@ -221,6 +221,7 @@ class NutriRootsApp {
         this.companies = []; // Lista de empresas clientes autorizadas (solo corporativo)
         this.catalogType = "particular"; // Catálogo de viandas activo ('particular' o 'corporativo')
         this.lastOrder = null; // Último pedido registrado para mostrar resumen en pantalla de éxito
+        this.zonesEnabled = true; // Zonas y Envíos visible al público (se controla desde el Panel Admin)
 
         // Estado del Mapa Interactivo y Coordenadas Zárate 3171, Ituzaingó
         this.deliveryMap = null;
@@ -238,6 +239,12 @@ class NutriRootsApp {
     async init() {
         this.activeCompany = "nutriroots";
         await this.loadData();
+        await this.loadSettings();
+
+        // Mientras el admin tiene el panel abierto, trae pedidos nuevos cada 60 segundos
+        setInterval(() => {
+            if (this.currentView === "admin" && !document.hidden) this.refreshOrders();
+        }, 60000);
 
         // Recuperar último pedido de la sesión si existiera
         const savedLastOrder = sessionStorage.getItem("nr_last_order");
@@ -279,6 +286,234 @@ class NutriRootsApp {
         }
 
         // Vista de zonas lista en el DOM según modelo Homefood
+    }
+
+    // --- CONFIGURACIÓN: Mostrar/ocultar "Zonas y Envíos" al público ---
+    async loadSettings() {
+        try {
+            const doc = await db.collection("nutriroots_data").doc("settings").get();
+            // Si el documento no existe o falla, la sección queda visible (comportamiento anterior)
+            this.zonesEnabled = !(doc.exists && doc.data().zonesEnabled === false);
+        } catch (error) {
+            console.error("No se pudo leer la configuración, Zonas queda visible:", error);
+            this.zonesEnabled = true;
+        }
+        this.applyZonesVisibility();
+    }
+
+    toggleZonesEnabled(enabled) {
+        this.zonesEnabled = !!enabled;
+        // Solo escribe cuando el admin cambia el interruptor (nunca al cargar la página)
+        db.collection("nutriroots_data").doc("settings").set({ zonesEnabled: this.zonesEnabled }, { merge: true }).catch(console.error);
+        this.backupDoc("settings", { zonesEnabled: this.zonesEnabled });
+        this.applyZonesVisibility();
+    }
+
+    applyZonesVisibility() {
+        // El admin siempre ve la sección para poder seguir trabajándola; el público solo si está activada
+        const hidden = !this.zonesEnabled && !this.adminSession;
+        document.documentElement.classList.toggle("zones-hidden", hidden);
+
+        const toggle = document.getElementById("admin-zones-toggle");
+        if (toggle) toggle.checked = this.zonesEnabled;
+        const label = document.getElementById("admin-zones-status");
+        if (label) {
+            label.textContent = this.zonesEnabled ? "Visible al público" : "Oculta al público";
+            label.style.color = this.zonesEnabled ? "var(--green-success)" : "#ef4444";
+        }
+    }
+
+    // --- RESPALDO AUTOMÁTICO (backup_*) ---
+    // Cada cambio importante se copia a colecciones de respaldo en Firestore. Nunca se escribe al cargar la página
+    // y un fallo del respaldo jamás interrumpe la operación principal.
+    cleanForBackup(data) {
+        return JSON.parse(JSON.stringify(data));
+    }
+
+    backupOrder(order, extra = {}) {
+        if (!order || !order.id || typeof db === "undefined") return;
+        try {
+            db.collection("backup_orders").doc(order.id)
+                .set({ ...this.cleanForBackup(order), ...extra, _backupAt: new Date().toISOString() }, { merge: true })
+                .catch(e => console.error("Respaldo de pedido falló:", e));
+        } catch (e) { console.error("Respaldo de pedido falló:", e); }
+    }
+
+    backupMenu(menu, withHistory = true) {
+        // Nunca se respalda un menú vacío: así un vaciado accidental no puede borrar la última copia buena
+        if (!Array.isArray(menu) || menu.length === 0 || typeof db === "undefined") return;
+        try {
+            const payload = { data: this.cleanForBackup(menu), count: menu.length, savedAt: new Date().toISOString() };
+            db.collection("backup_data").doc("menu_latest").set(payload).catch(e => console.error("Respaldo de menú falló:", e));
+            if (withHistory) {
+                db.collection("backup_menu_history").doc(String(Date.now())).set(payload).catch(e => console.error("Historial de menú falló:", e));
+            }
+        } catch (e) { console.error("Respaldo de menú falló:", e); }
+    }
+
+    backupDoc(name, data) {
+        if (typeof db === "undefined" || data === undefined || data === null) return;
+        if (Array.isArray(data) && data.length === 0) return; // no pisar una copia buena con una lista vacía
+        try {
+            const payload = Array.isArray(data) ? { data: this.cleanForBackup(data) } : this.cleanForBackup(data);
+            db.collection("backup_data").doc(name).set({ ...payload, _backupAt: new Date().toISOString() }).catch(e => console.error("Respaldo falló:", e));
+        } catch (e) { console.error("Respaldo falló:", e); }
+    }
+
+    // Descarga todo lo que hay hoy en Firebase en un archivo JSON (copia fuera de Firebase)
+    async exportFullBackup() {
+        try {
+            const [menuDoc, companiesDoc, settingsDoc, ordersSnap] = await Promise.all([
+                db.collection("nutriroots_data").doc("menu").get(),
+                db.collection("nutriroots_data").doc("companies").get(),
+                db.collection("nutriroots_data").doc("settings").get(),
+                db.collection("orders").get()
+            ]);
+            const backup = {
+                exportedAt: new Date().toISOString(),
+                menu: menuDoc.exists ? menuDoc.data().data : [],
+                companies: companiesDoc.exists ? companiesDoc.data().data : [],
+                settings: settingsDoc.exists ? settingsDoc.data() : {},
+                orders: ordersSnap.docs.map(d => d.data())
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `respaldo_nutriroots_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert(`Respaldo descargado: ${backup.orders.length} pedidos y ${backup.menu.length} platos.`);
+        } catch (error) {
+            console.error("No se pudo exportar el respaldo:", error);
+            alert("No se pudo descargar el respaldo. Revisá tu conexión e intentá de nuevo.");
+        }
+    }
+
+    // Vuelve a crear los pedidos que están en el respaldo pero faltan en la lista principal (ignora los eliminados a propósito)
+    async restoreMissingOrders() {
+        try {
+            const [mainSnap, backupSnap] = await Promise.all([
+                db.collection("orders").get(),
+                db.collection("backup_orders").get()
+            ]);
+            const existing = new Set(mainSnap.docs.map(d => d.data().id));
+            const missing = backupSnap.docs.map(d => d.data()).filter(o => o.id && !existing.has(o.id) && !o.deletedAt);
+            if (missing.length === 0) {
+                alert("No hay pedidos para restaurar: todos los del respaldo ya están en la lista.");
+                return;
+            }
+            if (!confirm(`Se van a restaurar ${missing.length} pedido(s) que faltan. ¿Continuar?`)) return;
+            for (const o of missing) {
+                const { _backupAt, deletedAt, ...order } = o;
+                await db.collection("orders").doc(order.id).set(order);
+            }
+            await this.refreshOrders();
+            alert(`Se restauraron ${missing.length} pedido(s).`);
+        } catch (error) {
+            console.error("No se pudieron restaurar los pedidos:", error);
+            alert("No se pudo restaurar. Revisá tu conexión e intentá de nuevo.");
+        }
+    }
+
+    // Permite elegir una versión anterior del menú (las últimas 10 guardadas) y volver a ella
+    async restoreMenuFromHistory() {
+        try {
+            const snap = await db.collection("backup_menu_history").get();
+            const versions = snap.docs.map(d => d.data()).filter(v => Array.isArray(v.data) && v.data.length > 0)
+                .sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt))).slice(0, 10);
+            if (versions.length === 0) {
+                alert("Todavía no hay versiones anteriores del menú guardadas.");
+                return;
+            }
+            const list = versions.map((v, i) => `${i + 1}) ${new Date(v.savedAt).toLocaleString("es-AR")} — ${v.count} platos`).join("\n");
+            const answer = prompt(`Elegí qué versión del menú restaurar (número):\n\n${list}`);
+            if (!answer) return;
+            const chosen = versions[parseInt(answer, 10) - 1];
+            if (!chosen) { alert("Número inválido."); return; }
+            if (!confirm(`Esto reemplaza el menú actual por la versión con ${chosen.count} platos. ¿Continuar?`)) return;
+            const ok = await this.updateMenuRemote(() => chosen.data);
+            if (!ok) { alert("No se pudo restaurar el menú."); return; }
+            this.renderCategoryChips();
+            this.renderMenuGrid();
+            this.renderMenuEditor();
+            alert("Menú restaurado.");
+        } catch (error) {
+            console.error("No se pudo restaurar el menú:", error);
+            alert("No se pudo restaurar. Revisá tu conexión e intentá de nuevo.");
+        }
+    }
+
+    // --- UTILIDADES DE SEGURIDAD Y DATOS ---
+    // Escapa texto antes de meterlo en innerHTML (evita que un cliente inyecte HTML/JS en el panel admin)
+    escapeHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    // Convierte teléfonos argentinos escritos de cualquier forma al formato de WhatsApp (549 + área + número)
+    normalizePhoneForWhatsApp(rawPhone) {
+        let digits = String(rawPhone || "").replace(/\D/g, "");
+        if (!digits) return "";
+        if (digits.startsWith("00")) digits = digits.slice(2);
+        if (digits.startsWith("54")) {
+            digits = digits.slice(2);
+            if (digits.startsWith("9")) digits = digits.slice(1);
+        }
+        if (digits.startsWith("0")) digits = digits.slice(1);
+        if (/^15\d{8}$/.test(digits)) {
+            // "15 12345678" sin código de área: se asume AMBA (11)
+            digits = "11" + digits.slice(2);
+        } else {
+            // "11 15 12345678" -> "11 12345678"
+            const m = digits.match(/^(\d{2,4})15(\d{6,8})$/);
+            if (m && (m[1].length + m[2].length) === 10) digits = m[1] + m[2];
+        }
+        return digits.length === 10 ? "549" + digits : digits;
+    }
+
+    // Modifica el menú en Firebase de forma segura: lee la última versión, aplica SOLO el cambio y guarda.
+    // Así un celular/pestaña con datos viejos nunca pisa los cambios hechos desde otro lado.
+    async updateMenuRemote(mutator, { history = true } = {}) {
+        const ref = db.collection("nutriroots_data").doc("menu");
+        try {
+            const result = await db.runTransaction(async (tx) => {
+                const snap = await tx.get(ref);
+                const current = snap.exists && snap.data() && Array.isArray(snap.data().data) ? snap.data().data : [];
+                const next = JSON.parse(JSON.stringify(mutator(JSON.parse(JSON.stringify(current)))));
+                tx.set(ref, { data: next });
+                return next;
+            });
+            this.menu = result;
+            try { localStorage.setItem("nr_menu_unified_v2", JSON.stringify(this.menu)); } catch (e) {}
+            this.backupMenu(this.menu, history);
+            return true;
+        } catch (error) {
+            console.error("No se pudo actualizar el menú en Firebase:", error);
+            return false;
+        }
+    }
+
+    // Vuelve a leer los pedidos desde Firebase (el panel admin los refresca solo cada minuto)
+    async refreshOrders() {
+        try {
+            const snapshot = await db.collection("orders").get();
+            this.orders = snapshot.docs.map(doc => doc.data());
+            const modal = document.getElementById("order-modal");
+            const modalOpen = modal && modal.style.display === "flex";
+            if (this.currentView === "admin" && !modalOpen) {
+                this.updateAdminStats();
+                this.renderOrdersTable();
+            }
+        } catch (error) {
+            console.error("No se pudieron refrescar los pedidos:", error);
+        }
     }
 
     // --- MANEJO DE PERSISTENCIA ---
@@ -409,6 +644,7 @@ class NutriRootsApp {
     saveCompaniesToLocalStorage() {
         db.collection("nutriroots_data").doc("companies").set({ data: this.companies }).catch(console.error);
         localStorage.setItem("nr_companies_unified_v2", JSON.stringify(this.companies));
+        this.backupDoc("companies", this.companies);
     }
 
     migrateMenuCategories() {
@@ -439,6 +675,7 @@ class NutriRootsApp {
     }
 
     updateNavVisibility(viewName) {
+        this.applyZonesVisibility();
         const cartToggle = document.getElementById("btn-cart-toggle");
         const navClientLink = document.getElementById("nav-client-link");
         const navZonesLink = document.getElementById("nav-zones-link");
@@ -1277,6 +1514,10 @@ class NutriRootsApp {
 
     // --- CONTROL DE VISTAS (SPA) ---
     showView(viewName) {
+        // Si Zonas está desactivada y no es admin, redirigir al inicio
+        if (viewName === "zones" && !this.zonesEnabled && !this.adminSession) {
+            viewName = "landing";
+        }
         this.currentView = viewName;
 
         // Ocultar todas las secciones
@@ -1310,6 +1551,7 @@ class NutriRootsApp {
                 this.updateAdminStats();
                 this.renderOrdersTable();
                 this.renderMenuEditor();
+                this.refreshOrders();
             } else {
                 activeSection.style.display = "block";
                 if (viewName === "client" && navClientLink) {
@@ -1323,14 +1565,14 @@ class NutriRootsApp {
                     const corpCompanySelect = document.getElementById("corporate-company-select");
                     if (corpCompanySelect) {
                         corpCompanySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' +
-                            this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+                            this.companies.map(c => `<option value="${this.escapeHtml(c.name)}">${this.escapeHtml(c.name)}</option>`).join("");
                     }
                 }
                 if (viewName === "checkout") {
                     const companySelect = document.getElementById("checkout-company-select");
                     if (companySelect) {
                         companySelect.innerHTML = '<option value="" disabled selected>Selecciona tu empresa...</option>' +
-                            this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+                            this.companies.map(c => `<option value="${this.escapeHtml(c.name)}">${this.escapeHtml(c.name)}</option>`).join("");
                     }
                     if (this.catalogType === "corporativo" && this.clientCompany) {
                         companySelect.value = this.clientCompany;
@@ -1576,7 +1818,7 @@ class NutriRootsApp {
 
     addToCart(itemId) {
         const menuItem = this.menu.find(item => item.id === itemId);
-        if (!menuItem || !menuItem.available) return;
+        if (!menuItem || menuItem.available === false) return;
 
         const cartItemIndex = this.cart.findIndex(item => item.id === itemId);
 
@@ -1856,9 +2098,71 @@ class NutriRootsApp {
         }
     }
 
-    handleCheckoutSubmit(event) {
-        event.preventDefault();
+    // Revisa contra Firebase que lo que hay en el carrito siga disponible, con stock y al mismo precio
+    async validateCartAgainstServer() {
+        try {
+            const snap = await db.collection("nutriroots_data").doc("menu").get();
+            if (!snap.exists || !snap.data() || !Array.isArray(snap.data().data)) return { ok: true };
 
+            this.menu = snap.data().data;
+            this.migrateMenuCategories();
+
+            const messages = [];
+            this.cart = this.cart.filter(cartItem => {
+                const menuItem = this.menu.find(m => m.id === cartItem.id);
+                if (!menuItem || menuItem.available === false || (menuItem.stock != null && menuItem.stock <= 0)) {
+                    messages.push(`"${cartItem.name}" ya no está disponible y se quitó del pedido.`);
+                    return false;
+                }
+                if (menuItem.stock != null && cartItem.quantity > menuItem.stock) {
+                    messages.push(`De "${cartItem.name}" solo quedan ${menuItem.stock} unidades; ajustamos la cantidad.`);
+                    cartItem.quantity = menuItem.stock;
+                }
+                if (menuItem.price !== cartItem.price) {
+                    messages.push(`El precio de "${cartItem.name}" se actualizó.`);
+                    cartItem.price = menuItem.price;
+                }
+                return true;
+            });
+
+            if (messages.length === 0) return { ok: true };
+
+            this.updateCartUI();
+            this.renderCartItems();
+            this.renderMenuGrid();
+            if (this.cart.length === 0) {
+                alert(messages.join("\n") + "\n\nTu carrito quedó vacío. Elegí otros platos.");
+                this.showView("client");
+            } else {
+                this.renderCheckoutSummary();
+                alert(messages.join("\n") + "\n\nRevisá tu pedido y confirmalo de nuevo.");
+            }
+            return { ok: false };
+        } catch (error) {
+            console.error("No se pudo validar el carrito contra el servidor:", error);
+            return { ok: true }; // Sin conexión a la validación: no bloqueamos la compra
+        }
+    }
+
+    async handleCheckoutSubmit(event) {
+        event.preventDefault();
+        if (this._submittingOrder) return; // evita doble clic
+        this._submittingOrder = true;
+
+        const submitBtn = event.target && event.target.querySelector ? event.target.querySelector('button[type="submit"]') : null;
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const validation = await this.validateCartAgainstServer();
+            if (!validation.ok) return;
+            this.processCheckout(event);
+        } finally {
+            this._submittingOrder = false;
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    }
+
+    processCheckout(event) {
         if (this.cart.length === 0) {
             alert("Tu carrito está vacío. Vuelve a seleccionar platos.");
             this.showView("client");
@@ -1893,7 +2197,7 @@ class NutriRootsApp {
 
         // Generar un ID incremental o aleatorio único
         const orderNumber = 1000 + this.orders.length + 1;
-        const uniqueSuffix = Math.floor(Math.random() * 9000) + 1000;
+        const uniqueSuffix = Math.floor(Math.random() * 90000) + 10000;
         const orderId = `NR-${orderNumber}-${uniqueSuffix}`;
 
         const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1938,22 +2242,24 @@ class NutriRootsApp {
         if (typeof db !== 'undefined') {
             db.collection("orders").doc(newOrder.id).set(newOrder).catch(console.error);
         }
+        this.backupOrder(newOrder);
         this.saveOrdersToLocalStorage();
 
-        // Descontar stock de los items comprados
-        let menuUpdated = false;
-        this.cart.forEach(cartItem => {
-            const menuItem = this.menu.find(m => m.id === cartItem.id);
-            if (menuItem && menuItem.stock != null) {
-                menuItem.stock -= cartItem.quantity;
-                if (menuItem.stock < 0) menuItem.stock = 0;
-                menuUpdated = true;
-            }
+        // Descontar stock de los items comprados: se toca SOLO el stock en Firebase,
+        // sin reescribir el resto del menú con la copia (posiblemente vieja) de este cliente.
+        const purchased = this.cart.map(c => ({ id: c.id, quantity: c.quantity }));
+        const hasLimitedStock = purchased.some(p => {
+            const m = this.menu.find(i => i.id === p.id);
+            return m && m.stock != null;
         });
-
-        if (menuUpdated) {
-            this.saveMenuToLocalStorage();
-            this.renderMenuGrid();
+        if (hasLimitedStock) {
+            this.updateMenuRemote(menu => {
+                purchased.forEach(p => {
+                    const m = menu.find(i => i.id === p.id);
+                    if (m && m.stock != null) m.stock = Math.max(0, m.stock - p.quantity);
+                });
+                return menu;
+            }, { history: false }).then(() => this.renderMenuGrid());
         }
 
 
@@ -1994,7 +2300,7 @@ class NutriRootsApp {
                     <div class="success-item-row">
                         <div style="display: flex; align-items: center;">
                             <span class="success-item-qty">${item.quantity}x</span>
-                            <span class="success-item-name">${item.name}</span>
+                            <span class="success-item-name">${this.escapeHtml(item.name)}</span>
                         </div>
                         <div>${priceHtml}</div>
                     </div>
@@ -2013,7 +2319,7 @@ class NutriRootsApp {
         if (isCorp) {
             if (subtotalRow) subtotalRow.style.display = "none";
             if (shippingRow) shippingRow.style.display = "none";
-            if (totalEl) totalEl.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa (${order.companyName || 'Corporativo'})</span>`;
+            if (totalEl) totalEl.innerHTML = `<span style="color: var(--primary); font-size: 1rem;">Facturado a Empresa (${this.escapeHtml(order.companyName || 'Corporativo')})</span>`;
         } else {
             if (subtotalRow) subtotalRow.style.display = "flex";
             if (shippingRow) shippingRow.style.display = "flex";
@@ -2033,11 +2339,11 @@ class NutriRootsApp {
             let detailsHtml = `
                 <div class="success-detail-item">
                     <span class="success-detail-label">Cliente</span>
-                    <span class="success-detail-val">${order.customerName || '-'}</span>
+                    <span class="success-detail-val">${this.escapeHtml(order.customerName || '-')}</span>
                 </div>
                 <div class="success-detail-item">
                     <span class="success-detail-label">Teléfono</span>
-                    <span class="success-detail-val">${order.phone || 'No especificado'}</span>
+                    <span class="success-detail-val">${this.escapeHtml(order.phone || 'No especificado')}</span>
                 </div>
             `;
 
@@ -2045,7 +2351,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item">
                         <span class="success-detail-label">Empresa</span>
-                        <span class="success-detail-val">${order.companyName}</span>
+                        <span class="success-detail-val">${this.escapeHtml(order.companyName)}</span>
                     </div>
                 `;
             }
@@ -2054,7 +2360,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item">
                         <span class="success-detail-label">Zona de Entrega</span>
-                        <span class="success-detail-val">${order.deliveryZone}</span>
+                        <span class="success-detail-val">${this.escapeHtml(order.deliveryZone)}</span>
                     </div>
                 `;
             }
@@ -2063,7 +2369,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item">
                         <span class="success-detail-label">Dirección de Entrega</span>
-                        <span class="success-detail-val">${order.address}</span>
+                        <span class="success-detail-val">${this.escapeHtml(order.address)}</span>
                     </div>
                 `;
             }
@@ -2089,7 +2395,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item">
                         <span class="success-detail-label">Franja Horaria</span>
-                        <span class="success-detail-val">${order.deliveryTime}</span>
+                        <span class="success-detail-val">${this.escapeHtml(order.deliveryTime)}</span>
                     </div>
                 `;
             }
@@ -2098,7 +2404,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item">
                         <span class="success-detail-label">Medio de Pago</span>
-                        <span class="success-detail-val">${order.paymentMethod}</span>
+                        <span class="success-detail-val">${this.escapeHtml(order.paymentMethod)}</span>
                     </div>
                 `;
             }
@@ -2107,7 +2413,7 @@ class NutriRootsApp {
                 detailsHtml += `
                     <div class="success-detail-item" style="grid-column: 1 / -1;">
                         <span class="success-detail-label">Notas / Aclaraciones</span>
-                        <span class="success-detail-val" style="font-style: italic;">"${order.notes}"</span>
+                        <span class="success-detail-val" style="font-style: italic;">"${this.escapeHtml(order.notes)}"</span>
                     </div>
                 `;
             }
@@ -2267,7 +2573,7 @@ class NutriRootsApp {
             if (Object.keys(viandasBreakdown).length > 0) {
                 const breakdownHtml = Object.keys(viandasBreakdown).map(k => {
                     return `<div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--gray-200); padding-bottom: 0.15rem; margin-bottom: 0.15rem; font-size: 0.85rem; color: var(--dark-muted);">
-                                <span>${k}</span> <span style="font-weight:700; color:var(--dark);">${viandasBreakdown[k]}</span>
+                                <span>${this.escapeHtml(k)}</span> <span style="font-weight:700; color:var(--dark);">${viandasBreakdown[k]}</span>
                             </div>`;
                 }).join('');
                 viandasSpan.innerHTML = `<div style="margin-top: 0.5rem;">${breakdownHtml}</div>`;
@@ -2293,7 +2599,7 @@ class NutriRootsApp {
                     return `
                         <div style="display: flex; flex-direction: column; gap: 0.3rem;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
-                                <span style="font-weight: 700; color: var(--dark);">${menuTag}</span>
+                                <span style="font-weight: 700; color: var(--dark);">${this.escapeHtml(menuTag)}</span>
                                 <span style="font-weight: 600; color: var(--primary);">${qty} unidades</span>
                             </div>
                             <div style="width: 100%; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
@@ -2350,10 +2656,10 @@ class NutriRootsApp {
                 return `
                     <div style="border-bottom: 1px dashed var(--gray-200); padding: 0.35rem 0; font-size: 0.85rem; line-height: 1.3;">
                         <div style="display: flex; justify-content: space-between; gap: 1.5rem; align-items: baseline;">
-                            <span style="font-weight: 700; color: var(--primary); text-align: left;">${displayTag}: ${displayName}</span>
+                            <span style="font-weight: 700; color: var(--primary); text-align: left;">${this.escapeHtml(displayTag)}: ${this.escapeHtml(displayName)}</span>
                             <span style="font-weight: 700; color: var(--dark); text-align: right; white-space: nowrap; font-size: 0.9rem;">x${item.quantity}</span>
                         </div>
-                        ${itemDescription ? `<div style="font-size: 0.76rem; color: var(--gray-500); margin-top: 0.15rem; text-align: left; line-height: 1.25;">${itemDescription}</div>` : ""}
+                        ${itemDescription ? `<div style="font-size: 0.76rem; color: var(--gray-500); margin-top: 0.15rem; text-align: left; line-height: 1.25;">${this.escapeHtml(itemDescription)}</div>` : ""}
                     </div>
                 `;
             }).join("");
@@ -2372,18 +2678,18 @@ class NutriRootsApp {
 
             return `
                 <tr>
-                    <td style="font-weight: 700; color: var(--primary);">${order.id}</td>
+                    <td style="font-weight: 700; color: var(--primary);">${this.escapeHtml(order.id)}</td>
                     <td>
-                        <div style="font-weight: 600; font-size: 0.95rem;">${order.customerName}</div>
+                        <div style="font-weight: 600; font-size: 0.95rem;">${this.escapeHtml(order.customerName)}</div>
                     </td>
                     <td>
                         ${order.companyName
-                    ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center;">${APP_ICONS.company} ${order.companyName}</span>`
+                    ? `<span style="font-size: 0.85rem; font-weight: 600; color: var(--primary); display: flex; align-items: center;">${APP_ICONS.company} ${this.escapeHtml(order.companyName)}</span>`
                     : `<span style="font-size: 0.8rem; color: var(--gray-500); display: flex; align-items: center; font-style: italic;">${APP_ICONS.user} Cliente Particular</span>`}
                     </td>
                     <td style="font-size: 0.85rem; line-height: 1.3; vertical-align: top;">${itemsSummary}</td>
-                    <td style="font-size: 0.85rem; line-height: 1.3; max-width: 200px; word-break: break-word;" title="${order.notes || ''}">
-                        ${order.notes ? `_${order.notes}_` : '<span style="color: var(--gray-400);">Sin aclaraciones</span>'}
+                    <td style="font-size: 0.85rem; line-height: 1.3; max-width: 200px; word-break: break-word;" title="${this.escapeHtml(order.notes || '')}">
+                        ${order.notes ? `_${this.escapeHtml(order.notes)}_` : '<span style="color: var(--gray-400);">Sin aclaraciones</span>'}
                     </td>
                     <td style="font-weight: 700;">$${calculatedTotal.toLocaleString("es-AR")}</td>
                     <td>
@@ -2471,6 +2777,8 @@ class NutriRootsApp {
 
                     const formattedRow = row.map(val => {
                         let cell = val === null || val === undefined ? '' : String(val);
+                        // Evita que Excel ejecute fórmulas si un cliente escribe =, +, - o @ al inicio
+                        if (/^[=+\-@\t\r]/.test(cell)) cell = "'" + cell;
                         cell = cell.replace(/"/g, '""');
                         // Cambiamos la búsqueda para que detecte el punto y coma (;)
                         if (cell.search(/("|\n|;)/g) >= 0) {
@@ -2537,7 +2845,12 @@ class NutriRootsApp {
         message += `Tu pedido ya se encuentra registrado y en preparación. ¡Muchas gracias por elegirnos!`;
 
         const encodedText = encodeURIComponent(message);
-        window.open(`https://api.whatsapp.com/send?phone=${order.phone}&text=${encodedText}`, '_blank');
+        const waPhone = this.normalizePhoneForWhatsApp(order.phone);
+        if (!waPhone) {
+            alert("El teléfono de este pedido no es válido para WhatsApp.");
+            return;
+        }
+        window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodedText}`, '_blank');
     }
 
     changeOrderStatus(orderId, newStatus) {
@@ -2548,6 +2861,7 @@ class NutriRootsApp {
             if (typeof db !== 'undefined') {
                 db.collection("orders").doc(orderId).update({ status: newStatus }).catch(console.error);
             }
+            this.backupOrder(order);
             this.saveOrdersToLocalStorage();
             this.updateAdminStats();
             this.renderOrdersTable();
@@ -2588,12 +2902,12 @@ class NutriRootsApp {
 
                 detailsContainer.innerHTML = `
                     <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; border-bottom: 1px solid var(--primary-light); padding-bottom: 0.4rem; display: flex; align-items: center;">${APP_ICONS.package} Detalles de Entrega y Pago</div>
-                    <div style="margin-bottom: 0.15rem;"><strong>Zona:</strong> ${order.deliveryZone || 'CABA'}</div>
-                    <div style="margin-bottom: 0.15rem;"><strong>Teléfono:</strong> ${order.phone || 'N/A'}</div>
-                    <div style="margin-bottom: 0.15rem;"><strong>Dirección:</strong> ${order.address || 'N/A'}</div>
+                    <div style="margin-bottom: 0.15rem;"><strong>Zona:</strong> ${this.escapeHtml(order.deliveryZone || 'CABA')}</div>
+                    <div style="margin-bottom: 0.15rem;"><strong>Teléfono:</strong> ${this.escapeHtml(order.phone || 'N/A')}</div>
+                    <div style="margin-bottom: 0.15rem;"><strong>Dirección:</strong> ${this.escapeHtml(order.address || 'N/A')}</div>
                     <div style="margin-bottom: 0.15rem;"><strong>Fecha:</strong> ${dateFormatted || 'N/A'}</div>
-                    <div style="margin-bottom: 0.15rem;"><strong>Horario:</strong> ${order.deliveryTime || 'N/A'}</div>
-                    <div><strong>Método de Pago:</strong> ${order.paymentMethod || 'N/A'}</div>
+                    <div style="margin-bottom: 0.15rem;"><strong>Horario:</strong> ${this.escapeHtml(order.deliveryTime || 'N/A')}</div>
+                    <div><strong>Método de Pago:</strong> ${this.escapeHtml(order.paymentMethod || 'N/A')}</div>
                 `;
             } else {
                 detailsContainer.style.display = "none";
@@ -2618,7 +2932,7 @@ class NutriRootsApp {
 
         let optionsHtml = '<option value="">-- Seleccionar plato para agregar --</option>';
         this.menu.forEach(dish => {
-            optionsHtml += `<option value="${dish.id}">${dish.name} ($${(dish.price || 0).toLocaleString("es-AR")})</option>`;
+            optionsHtml += `<option value="${this.escapeHtml(dish.id)}">${this.escapeHtml(dish.name)} ($${(dish.price || 0).toLocaleString("es-AR")})</option>`;
         });
         select.innerHTML = optionsHtml;
     }
@@ -2639,10 +2953,7 @@ class NutriRootsApp {
                 return `
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px dashed var(--gray-200);">
                         <div style="flex-grow: 1; min-width: 0;">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">
-                                ${item.name}
-                            </div>
-                            <div style="font-size: 0.78rem; color: var(--dark-muted);">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${this.escapeHtml(item.name)}">$1${this.escapeHtml(item.name)}$2; color: var(--dark-muted);">
                                 $${(item.price || 0).toLocaleString("es-AR")} c/u
                             </div>
                         </div>
@@ -2756,7 +3067,17 @@ class NutriRootsApp {
 
             // Guardar individualmente en Firebase
             if (typeof db !== 'undefined') {
-                db.collection("orders").doc(id).set(order).catch(console.error);
+                db.collection("orders").doc(id).set({
+                    customerName: order.customerName,
+                    companyName: order.companyName || "",
+                    phone: order.phone,
+                    status: order.status,
+                    notes: order.notes,
+                    items: order.items || [],
+                    subtotal: order.subtotal || 0,
+                    total: order.total || 0
+                }, { merge: true }).catch(console.error);
+                this.backupOrder(order);
             }
 
             this.saveOrdersToLocalStorage();
@@ -2768,6 +3089,9 @@ class NutriRootsApp {
 
     deleteOrder(orderId) {
         if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el pedido ${orderId}?`)) {
+            // El pedido se borra de la lista pero queda en el respaldo marcado como eliminado
+            const toDelete = this.orders.find(o => o.id === orderId);
+            if (toDelete) this.backupOrder(toDelete, { deletedAt: new Date().toISOString() });
             this.orders = this.orders.filter(o => o.id !== orderId);
 
             // Eliminar individualmente de Firebase
@@ -2830,6 +3154,7 @@ class NutriRootsApp {
 
     clearAllMenus() {
         if (confirm("¿Estás seguro de que deseas vaciar TODOS los menús? La lista quedará en 0 platos.")) {
+            this.backupMenu(this.menu, true); // copia de seguridad del menú actual antes de vaciarlo
             this.menu = [];
             this.saveMenuToLocalStorage();
             this.renderMenuEditor();
@@ -2839,26 +3164,29 @@ class NutriRootsApp {
         }
     }
 
-    toggleItemAvailability(itemId, isAvailable) {
-        const item = this.menu.find(i => i.id === itemId);
-        if (item) {
-            item.available = isAvailable;
-            // Si el item cambia disponibilidad, se actualizan las etiquetas para un stock limpio
-            if (!isAvailable) {
-                item.tag = "Sin Stock";
-            } else if (item.tag === "Sin Stock") {
-                item.tag = "";
+    async toggleItemAvailability(itemId, isAvailable) {
+        const ok = await this.updateMenuRemote(menu => {
+            const item = menu.find(i => i.id === itemId);
+            if (item) {
+                item.available = isAvailable;
+                // Si el item cambia disponibilidad, se actualizan las etiquetas para un stock limpio
+                if (!isAvailable) {
+                    item.tag = "Sin Stock";
+                } else if (item.tag === "Sin Stock") {
+                    item.tag = "";
+                }
             }
-            this.saveMenuToLocalStorage();
-            this.renderMenuGrid();
-            this.renderMenuEditor();
-        }
+            return menu;
+        });
+        if (!ok) alert("No se pudo guardar el cambio. Revisá tu conexión e intentá de nuevo.");
+        this.renderMenuGrid();
+        this.renderMenuEditor();
     }
 
-    deleteMenuItem(itemId) {
+    async deleteMenuItem(itemId) {
         if (confirm("¿Estás seguro de que quieres eliminar esta vianda del menú? Esta acción no se puede deshacer.")) {
-            this.menu = this.menu.filter(i => i.id !== itemId);
-            this.saveMenuToLocalStorage();
+            const ok = await this.updateMenuRemote(menu => menu.filter(i => i.id !== itemId));
+            if (!ok) alert("No se pudo eliminar. Revisá tu conexión e intentá de nuevo.");
             this.renderCategoryChips();
             this.renderMenuGrid();
             this.renderMenuEditor();
@@ -2939,7 +3267,7 @@ class NutriRootsApp {
         }
     }
 
-    handleMenuSubmit(event) {
+    async handleMenuSubmit(event) {
         event.preventDefault();
 
         const id = document.getElementById("menu-id-field").value;
@@ -2955,6 +3283,19 @@ class NutriRootsApp {
         const stockStr = document.getElementById("menu-stock").value.trim();
         const stock = stockStr === "" ? null : parseInt(stockStr, 10);
 
+        if (!name) {
+            alert("Escribí el nombre de la vianda.");
+            return;
+        }
+        if (!Number.isFinite(price) || price < 0) {
+            alert("Ingresá un precio válido (número mayor o igual a 0).");
+            return;
+        }
+        if (stock !== null && (!Number.isFinite(stock) || stock < 0)) {
+            alert("El stock debe ser un número entero mayor o igual a 0, o dejarlo vacío.");
+            return;
+        }
+
         const kcal = document.getElementById("menu-kcal").value.trim();
         const protein = document.getElementById("menu-protein").value.trim();
         const carbs = document.getElementById("menu-carbs").value.trim();
@@ -2966,43 +3307,25 @@ class NutriRootsApp {
         if (carbs) macros.carbs = carbs;
         if (fat) macros.fat = fat;
 
-        if (id) {
-            // Editar existente
-            const index = this.menu.findIndex(item => item.id === id);
-            if (index > -1) {
-                this.menu[index] = {
-                    ...this.menu[index],
-                    name,
-                    description,
-                    category,
-                    price,
-                    type,
-                    tag,
-                    image,
-                    stock,
-                    available,
-                    macros
-                };
+        const newId = `m${Date.now()}`;
+        const ok = await this.updateMenuRemote(menu => {
+            if (id) {
+                // Editar existente (sobre la última versión guardada en Firebase)
+                const index = menu.findIndex(item => item.id === id);
+                if (index > -1) {
+                    menu[index] = { ...menu[index], name, description, category, price, type, tag, image, stock, available, macros };
+                }
+            } else {
+                // Crear nuevo
+                menu.push({ id: newId, name, description, category, price, type, tag, image, stock, available, macros });
             }
-        } else {
-            // Crear nuevo
-            const newId = `m${Date.now()}`;
-            this.menu.push({
-                id: newId,
-                name,
-                description,
-                category,
-                price,
-                type,
-                tag,
-                image,
-                stock,
-                available,
-                macros
-            });
+            return menu;
+        });
+        if (!ok) {
+            alert("No se pudo guardar la vianda. Revisá tu conexión e intentá de nuevo.");
+            return;
         }
 
-        this.saveMenuToLocalStorage();
         this.renderCategoryChips();
         this.renderMenuGrid();
         this.renderMenuEditor();
@@ -3047,7 +3370,7 @@ class NutriRootsApp {
 
         dropdown.innerHTML = `
             <option value="" disabled selected>Selecciona tu empresa...</option>
-            ${this.companies.map(c => `<option value="${c.name}">${c.name}</option>`).join("")}
+            ${this.companies.map(c => `<option value="${this.escapeHtml(c.name)}">${this.escapeHtml(c.name)}</option>`).join("")}
         `;
     }
 
@@ -3062,8 +3385,8 @@ class NutriRootsApp {
 
         tbody.innerHTML = this.companies.map((company, index) => `
             <tr>
-                <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${company.name}</td>
-                <td style="font-family: monospace; font-size: 0.9rem; color: var(--gray-600);">${company.password}</td>
+                <td style="font-weight: 600; font-size: 0.95rem; color: var(--dark); padding-left: 1.5rem;">${this.escapeHtml(company.name)}</td>
+                <td style="font-family: monospace; font-size: 0.9rem; color: var(--gray-600);">${this.escapeHtml(company.password)}</td>
                 <td style="text-align: center;">
                     <button class="btn-icon delete" onclick="app.deleteCompany(${index})" title="Eliminar Empresa" style="margin: 0 auto;">${APP_ICONS.delete}</button>
                 </td>
