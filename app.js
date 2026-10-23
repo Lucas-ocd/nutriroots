@@ -221,7 +221,8 @@ class NutriRootsApp {
         this.companies = []; // Lista de empresas clientes autorizadas (solo corporativo)
         this.catalogType = "particular"; // Catálogo de viandas activo ('particular' o 'corporativo')
         this.lastOrder = null; // Último pedido registrado para mostrar resumen en pantalla de éxito
-        this.zonesEnabled = true; // Zonas y Envíos visible al público (se controla desde el Panel Admin)
+        const savedZones = typeof localStorage !== "undefined" ? localStorage.getItem("nr_settings_zones_enabled") : null;
+        this.zonesEnabled = savedZones !== "false"; // Zonas y Envíos visible al público (se controla desde el Panel Admin)
 
         // Estado del Mapa Interactivo y Coordenadas Zárate 3171, Ituzaingó
         this.deliveryMap = null;
@@ -304,19 +305,33 @@ class NutriRootsApp {
 
     // --- CONFIGURACIÓN: Mostrar/ocultar "Zonas y Envíos" al público ---
     async loadSettings() {
+        const cached = typeof localStorage !== "undefined" ? localStorage.getItem("nr_settings_zones_enabled") : null;
+        if (cached !== null) {
+            this.zonesEnabled = cached !== "false";
+            this.applyZonesVisibility();
+        }
+
         try {
             const doc = await db.collection("nutriroots_data").doc("settings").get();
-            // Si el documento no existe o falla, la sección queda visible (comportamiento anterior)
-            this.zonesEnabled = !(doc.exists && doc.data().zonesEnabled === false);
+            if (doc.exists && doc.data() && typeof doc.data().zonesEnabled === "boolean") {
+                this.zonesEnabled = doc.data().zonesEnabled;
+            } else {
+                this.zonesEnabled = true;
+            }
+            if (typeof localStorage !== "undefined") {
+                try { localStorage.setItem("nr_settings_zones_enabled", String(this.zonesEnabled)); } catch(e) {}
+            }
         } catch (error) {
-            console.error("No se pudo leer la configuración, Zonas queda visible:", error);
-            this.zonesEnabled = true;
+            console.error("No se pudo leer la configuración de Firebase:", error);
         }
         this.applyZonesVisibility();
     }
 
     toggleZonesEnabled(enabled) {
         this.zonesEnabled = !!enabled;
+        if (typeof localStorage !== "undefined") {
+            try { localStorage.setItem("nr_settings_zones_enabled", String(this.zonesEnabled)); } catch(e) {}
+        }
         // Solo escribe cuando el admin cambia el interruptor (nunca al cargar la página)
         db.collection("nutriroots_data").doc("settings").set({ zonesEnabled: this.zonesEnabled }, { merge: true }).catch(console.error);
         this.backupDoc("settings", { zonesEnabled: this.zonesEnabled });
@@ -328,12 +343,27 @@ class NutriRootsApp {
         const hidden = !this.zonesEnabled && !this.adminSession;
         document.documentElement.classList.toggle("zones-hidden", hidden);
 
-        const toggle = document.getElementById("admin-zones-toggle");
-        if (toggle) toggle.checked = this.zonesEnabled;
-        const label = document.getElementById("admin-zones-status");
-        if (label) {
-            label.textContent = this.zonesEnabled ? "Visible al público" : "Oculta al público";
-            label.style.color = this.zonesEnabled ? "var(--green-success)" : "#ef4444";
+        // Ocultar / mostrar explícitamente en el DOM para no depender únicamente del CSS
+        if (typeof document !== "undefined") {
+            const entries = document.querySelectorAll(".zones-entry");
+            if (entries && entries.length) {
+                entries.forEach(el => {
+                    el.style.display = hidden ? "none" : "";
+                });
+            }
+
+            const navZonesLink = document.getElementById("nav-zones-link");
+            if (navZonesLink) {
+                navZonesLink.style.display = hidden ? "none" : "";
+            }
+
+            const toggle = document.getElementById("admin-zones-toggle");
+            if (toggle) toggle.checked = this.zonesEnabled;
+            const label = document.getElementById("admin-zones-status");
+            if (label) {
+                label.textContent = this.zonesEnabled ? "Visible al público" : "Oculta al público";
+                label.style.color = this.zonesEnabled ? "var(--green-success)" : "#ef4444";
+            }
         }
     }
 
@@ -557,17 +587,21 @@ class NutriRootsApp {
             }
 
             // Colección para órdenes individuales
-            const ordersSnapshot = await db.collection("orders").get();
-
-            if (!ordersSnapshot.empty) {
-                this.orders = ordersSnapshot.docs.map(doc => doc.data());
-                // Ordenar por ID descendente (más nuevos primero)
-                this.orders.sort((a, b) => {
-                    const idA = a.id || "";
-                    const idB = b.id || "";
-                    return idB.localeCompare(idA);
-                });
-            } else {
+            try {
+                const ordersSnapshot = await db.collection("orders").get();
+                if (!ordersSnapshot.empty) {
+                    this.orders = ordersSnapshot.docs.map(doc => doc.data());
+                    // Ordenar por ID descendente (más nuevos primero)
+                    this.orders.sort((a, b) => {
+                        const idA = a.id || "";
+                        const idB = b.id || "";
+                        return idB.localeCompare(idA);
+                    });
+                } else {
+                    this.orders = [];
+                }
+            } catch (ordersError) {
+                // En modo anónimo/público las reglas de Firebase bloquean leer pedidos ajenos por seguridad
                 this.orders = [];
             }
 
@@ -705,7 +739,8 @@ class NutriRootsApp {
             navClientLink.style.display = viewName === "landing" ? "none" : "";
         }
         if (navZonesLink) {
-            navZonesLink.style.display = ""; // Visible siempre para fácil consulta
+            const showZones = this.zonesEnabled || !!this.adminSession;
+            navZonesLink.style.display = showZones ? "" : "none";
         }
         if (navAdminLink) {
             navAdminLink.style.display = "";
@@ -737,6 +772,10 @@ class NutriRootsApp {
     }
 
     handleZonesLinkClick() {
+        if (!this.zonesEnabled && !this.adminSession) {
+            this.showView("landing");
+            return;
+        }
         this.showView("zones");
     }
 
@@ -1479,9 +1518,7 @@ class NutriRootsApp {
                 submitBtn.textContent = "Verificando...";
             }
             try {
-                // Permite ingresar con el email directo o 'admin'/'nutriroots' que mapea al correo oficial
-                const emailToAuth = username.includes("@") ? username : "pintolucasnicolas@gmail.com";
-                const userCredential = await firebase.auth().signInWithEmailAndPassword(emailToAuth, password);
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(username, password);
                 const user = userCredential.user;
                 this.adminSession = user.email || "admin";
                 sessionStorage.setItem("nr_admin_session", this.adminSession);
@@ -1496,7 +1533,7 @@ class NutriRootsApp {
                 console.error("Fallo de autenticación Firebase:", authError.code, authError.message);
                 if (errorMsg) {
                     if (errorText) {
-                        if (authError.code === "auth/invalid-credential" || authError.code === "auth/wrong-password" || authError.code === "auth/user-not-found") {
+                        if (authError.code === "auth/invalid-credential" || authError.code === "auth/wrong-password" || authError.code === "auth/user-not-found" || authError.code === "auth/invalid-email") {
                             errorText.textContent = "Correo o contraseña incorrectos.";
                         } else if (authError.code === "auth/too-many-requests") {
                             errorText.textContent = "Demasiados intentos. Esperá unos minutos.";
@@ -1517,8 +1554,7 @@ class NutriRootsApp {
         // Modo fallback (para pruebas automáticas o sin Firebase Auth cargado)
         const credentials = {
             "admin": "roots123",
-            "nutriroots": "roots123",
-            "pintolucasnicolas@gmail.com": "roots123"
+            "nutriroots": "roots123"
         };
 
         if (credentials[username] && credentials[username] === password) {
